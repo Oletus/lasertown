@@ -359,24 +359,48 @@ PeriscopeBlock.prototype = new BuildingBlock();
 
 PeriscopeBlock.prototype.createMesh = function() {
     var meshParent = new THREE.Object3D();
-    var geometry = new THREE.BoxGeometry( 1, 1, 0.15 );
+    var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.15 );
     var mesh = new THREE.Mesh(geometry, BuildingBlock.mirrorMaterial);
-    if (this.periscopeDirection === Laser.Direction.POSITIVE_Z || this.periscopeDirection === Laser.Direction.NEGATIVE_Z) {
-        if (this.isUpperBlock !== (this.periscopeDirection === Laser.Direction.POSITIVE_Z)) {
-            mesh.rotation.x = -Math.PI * 0.25;
-        } else {
-            mesh.rotation.x = Math.PI * 0.25;
-        }
-    }
-    if (this.periscopeDirection === Laser.Direction.POSITIVE_X || this.periscopeDirection === Laser.Direction.NEGATIVE_X) {
-        meshParent.rotation.y = Math.PI * 0.5;
-        if (this.isUpperBlock !== (this.periscopeDirection === Laser.Direction.POSITIVE_X)) {
-            mesh.rotation.x = -Math.PI * 0.25;
-        } else {
-            mesh.rotation.x = Math.PI * 0.25;
-        }
-    }
+    mesh.rotation.x = Math.PI * 0.25;
     meshParent.add(mesh);
+
+    if (this.isUpperBlock) {
+        mesh.rotation.x = -mesh.rotation.x;
+    }
+    var offset = Laser.offsetFromDirection(this.periscopeDirection);
+    meshParent.rotation.y = Math.atan2(-offset.x, -offset.z);
+    
+    var fs = 0.5;
+    var shape = new THREE.Shape();
+    shape.moveTo(-fs, -fs);
+    shape.lineTo(-fs,  fs);
+    if (this.isUpperBlock) {
+        shape.lineTo( fs, fs);
+        shape.lineTo( fs * 0.3, fs * 0.3);
+        shape.lineTo( fs * 0.3, -fs);
+    } else {
+        shape.lineTo( fs * 0.3, fs);
+        shape.lineTo( fs * 0.3, -fs * 0.3);
+        shape.lineTo( fs, -fs);
+    }
+    var line = new THREE.LineCurve3(new THREE.Vector3(-0.1, 0, 0), new THREE.Vector3(0.1, 0, 0));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    var edgeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    var edgeMesh1 = new THREE.Mesh(edgeGeometry, BuildingBlock.wallMaterial);
+    edgeMesh1.position.x = -0.4;
+    var edgeMesh2 = new THREE.Mesh(edgeGeometry, BuildingBlock.wallMaterial);
+    edgeMesh2.position.x = 0.4;
+    meshParent.add(edgeMesh1);
+    meshParent.add(edgeMesh2);
+    var backFaceGeometry = new THREE.BoxGeometry(1, 1, 0.2);
+    var backFaceMesh = new THREE.Mesh(backFaceGeometry, BuildingBlock.wallMaterial);
+    backFaceMesh.position.z = 0.4;
+    meshParent.add(backFaceMesh);
+    
     var parent = new THREE.Object3D();
     parent.add(meshParent);
     return parent;
