@@ -24,12 +24,31 @@ var Level = function(options) {
     for (var x = 0; x < this.width; ++x) {
         for (var z = 0; z < this.depth; ++z) {
             this.objects.push(new Building({
+                level: this,
                 scene: this.scene,
                 gridX: x,
                 gridZ: z
             }));
         }
     }
+    
+    this.laser = new LaserSegment({
+        level: this,
+        scene: this.scene
+    });
+    this.objects.push(this.laser);
+};
+
+Level.prototype.gridXToWorld = function(gridX) {
+    return gridX * GRID_SPACING;
+};
+
+Level.prototype.gridZToWorld = function(gridZ) {
+    return gridZ * GRID_SPACING;
+};
+
+Level.prototype.gridLengthToWorld = function(gridLength) {
+    return gridLength * GRID_SPACING;
 };
 
 Level.prototype.update = function(deltaTime) {
