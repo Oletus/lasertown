@@ -103,10 +103,17 @@ Building.prototype.addBlock = function(spec) {
     this.blocks.push(this.constructBlockFromSpec(spec));
 };
 
+Building.prototype.addBlockToTop = function(spec) {
+    this.blocks.splice(0, 0, this.constructBlockFromSpec(spec));
+};
+
 Building.prototype.removeBlock = function(block) {
     var ind = this.blocks.indexOf(block);
     block.removeFromScene();
     this.blocks.splice(ind, 1);
+    if (this.blocks.length === 1) {
+        this.setStationary(true);
+    }
 };
 
 Building.prototype.replaceBlockSpec = function(blockToReplace, spec) {

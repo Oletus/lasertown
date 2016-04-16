@@ -22,14 +22,21 @@ LevelEditor.prototype.zPress = function() {
 };
 
 LevelEditor.prototype.aPress = function() {
-    if (this.chosenY < 4) {
+    if (this.chosenY < 3) {
         ++this.chosenY;
     }
 };
 
 LevelEditor.prototype.getChosenBlock = function() {
     if (this.chosenBuilding) {
-        return this.chosenBuilding.getBlockAtLevel(this.chosenY + 0.5);
+        var atLevel = this.chosenBuilding.getBlockAtLevel(this.chosenY + 0.5);
+        if (atLevel === null && this.chosenBuilding && this.chosenBuilding.blocks.length < 5 && this.chosenBuilding.topYTarget > this.chosenY - 0.5) {
+            this.chosenBuilding.addBlockToTop({blockConstructor: StopBlock});
+            ++this.chosenBuilding.topYTarget;
+            this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
+            atLevel = this.chosenBuilding.getBlockAtLevel(this.chosenY + 0.5);
+        }
+        return atLevel;
     } else {
         return null;
     }
@@ -91,6 +98,12 @@ LevelEditor.prototype.cPress = function() {
     if (this.chosenBuilding && this.chosenBuilding.blocks.length < 5) {
         this.chosenBuilding.addBlock({blockConstructor: StopBlock});
         this.chosenBuilding.topYTarget++;
+    }
+};
+
+LevelEditor.prototype.qPress = function() {
+    if (this.chosenBuilding && this.chosenBuilding.blocks.length > 1) {
+        this.chosenBuilding.setStationary(!this.chosenBuilding.stationary);
     }
 };
 
