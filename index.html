@@ -96,7 +96,7 @@ window['start'] = function() {
         Game.parameters.initGUI();
     }
 
-    var renderer = new THREE.WebGLRenderer();
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
     
     var game;
     
