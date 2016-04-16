@@ -105,11 +105,23 @@ BuildingCursor.prototype.update = function(deltaTime) {
     this.object.position.x = this.level.gridXToWorld(this.gridX);
     this.object.position.z = this.level.gridZToWorld(this.gridZ);
     this.object.position.y = 0.2;
+    this.object.rotation.y += deltaTime;
 };
 
 BuildingCursor.prototype.createMesh = function() {
-    var geometry = new THREE.BoxGeometry( 1.5, 0.2, 1.5 );
+    var shape = utilTHREE.createSquareWithHole(1.9, 1.5);
+
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, -0.1, 0), new THREE.Vector3(0, 0.1, 0));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     var material = new THREE.MeshPhongMaterial( { color: 0xaaccff, emissive: 0x448888 } );
+    material.transparent = true;
+    material.opacity = 0.7;
+
     return new THREE.Mesh(geometry, material);
 };
 
