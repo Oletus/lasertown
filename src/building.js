@@ -39,17 +39,24 @@ Building.prototype.upPress = function() {
     if (this.stationary) {
         return;
     }
-    if (this.topYTarget < this.blocks.length - 1) {
-        ++this.topYTarget;
-    }
+    ++this.topYTarget;
+    this.clampY();
 };
 
 Building.prototype.downPress = function() {
     if (this.stationary) {
         return;
     }
-    if (this.topYTarget > 0) {
-        --this.topYTarget;
+    --this.topYTarget;
+    this.clampY();
+};
+
+Building.prototype.clampY = function() {
+    if (this.topYTarget > this.blocks.length - 1) {
+        this.topYTarget = this.blocks.length - 1;
+    }
+    if (this.topYTarget < 0) {
+        this.topYTarget = 0;
     }
 };
 
@@ -88,9 +95,19 @@ Building.prototype.constructBlockFromSpec = function(spec) {
     return new spec.blockConstructor(options);
 };
 
-Building.prototype.replaceBlockSpec = function(block, spec) {
+Building.prototype.addBlock = function(spec) {
+    this.blocks.push(this.constructBlockFromSpec(spec));
+};
+
+Building.prototype.removeBlock = function(block) {
     var ind = this.blocks.indexOf(block);
     block.removeFromScene();
+    this.blocks.splice(ind, 1);
+};
+
+Building.prototype.replaceBlockSpec = function(blockToReplace, spec) {
+    var ind = this.blocks.indexOf(blockToReplace);
+    blockToReplace.removeFromScene();
     this.blocks[ind] = this.constructBlockFromSpec(spec);
 };
 

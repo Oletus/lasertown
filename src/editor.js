@@ -80,6 +80,20 @@ LevelEditor.prototype.pPress = function() {
     }
 };
 
+LevelEditor.prototype.xPress = function() {
+    if (this.chosenBuilding && this.chosenBuilding.blocks.length > 1) {
+        this.chosenBuilding.removeBlock(this.chosenBuilding.blocks[this.chosenBuilding.blocks.length - 2]);
+        this.chosenBuilding.clampY();
+    }
+};
+
+LevelEditor.prototype.cPress = function() {
+    if (this.chosenBuilding && this.chosenBuilding.blocks.length < 5) {
+        this.chosenBuilding.addBlock({blockConstructor: StopBlock});
+        this.chosenBuilding.topYTarget++;
+    }
+};
+
 LevelEditor.prototype.updateBuildingCursor = function() {
     this.buildingCursor.y = this.chosenY + 0.7;
     this.chosenBuilding = this.level.chosenBuilding;
