@@ -117,8 +117,15 @@ Level.prototype.moveCamera = function(lookAt) {
 
 Level.prototype.setupGridGeometry = function() {
     var faceSize = GRID_SPACING;
-    var holeSize = 1.0; // hole size
-    this.gridGeometry = utilTHREE.createPlaneWithHole(faceSize, holeSize);
+    var holeSize = 1.2; // hole size
+    var shape = utilTHREE.createSquareWithHole(faceSize, holeSize);
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    this.gridGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     
     for (var x = 0; x < this.width; ++x) {
         for (var z = 0; z < this.depth; ++z) {

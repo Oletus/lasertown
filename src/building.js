@@ -174,22 +174,11 @@ HoleBlock.prototype.handleLaser = function(laserSegmentLoc) {
 };
 
 HoleBlock.prototype.createMesh = function() {
-    var shape = new THREE.Shape();
-    shape.moveTo(-0.5, -0.5);
-    shape.lineTo( 0.5, -0.5);
-    shape.lineTo( 0.5,  0.5);
-    shape.lineTo(-0.5,  0.5);
-    var hs = 0.3;
-    var hole = new THREE.Path();
-    hole.moveTo(-hs, -hs);
-    hole.lineTo( hs, -hs);
-    hole.lineTo( hs,  hs);
-    hole.lineTo(-hs,  hs);
-    shape.holes.push(hole);
+    var shape = utilTHREE.createSquareWithHole(1.0, 0.6);
 
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.3), new THREE.Vector3(0, 0, 0.3));
     var extrudeSettings = {
-        steps: 3,
+        steps: 1,
         bevelEnabled: false,
         extrudePath: line
     };
