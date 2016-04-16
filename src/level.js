@@ -30,7 +30,7 @@ var Level = function(options) {
         for (var z = 0; z < this.depth; ++z) {
             var building = new Building();
             var blocksSpec = [
-                {blockConstructor: HoleBlock, mirrorDirection: true},
+                {blockConstructor: HoleBlock, holeDirection: true},
                 {blockConstructor: StopBlock}
             ];
             building.initBuilding({
@@ -68,6 +68,10 @@ var Level = function(options) {
     });
     this.objects.push(this.buildingCursor);
     this.updateChosenBuilding();
+    
+    if (DEV_MODE) {
+        this.editor = new LevelEditor(this, this.scene);
+    }
 };
 
 Level.State = {
@@ -90,6 +94,9 @@ Level.prototype.gridLengthToWorld = function(gridLength) {
 Level.prototype.update = function(deltaTime) {
     for (var i = 0; i < this.objects.length; ++i) {
         this.objects[i].update(deltaTime);
+    }
+    if (this.editor) {
+        this.editor.update(deltaTime);
     }
 };
 

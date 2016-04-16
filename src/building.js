@@ -20,17 +20,7 @@ Building.prototype.initBuilding = function(options) {
     this.blocks = [];
     for (var i = 0; i < this.blocksSpec.length; ++i) {
         var spec = this.blocksSpec[i];
-        var options = {
-            level: this.level,
-            building: this,
-            scene: this.scene
-        };
-        for (var key in spec) {
-            if (spec.hasOwnProperty(key)) {
-                options[key] = spec[key];
-            }
-        }
-        this.blocks.push(new spec.blockConstructor(options));
+        this.blocks.push(this.constructBlockFromSpec(spec));
     }
     this.stationary = false;
 };
@@ -61,16 +51,45 @@ Building.prototype.downPress = function() {
     }
 };
 
+Building.prototype.getBlockAtLevel = function(y) {
+    if (y >= this.topY || y <= this.topY - this.blocks.length) {
+        return null;
+    } else {
+        var yFromTop = this.topY - y;
+        return this.blocks[Math.floor(yFromTop)];
+    }
+};
+
 /**
- * @return {Object} true if laser is let through. Null if laser stops. LaserSegmentLocation object if a new segment is started. 
+ * @return {Object} Laser.Handling in case of simple handling. LaserSegmentLocation object if a new segment is started. 
  */
 Building.prototype.handleLaser = function(laserSegmentLoc) {
-    if (laserSegmentLoc.y >= this.topY || laserSegmentLoc.y <= this.topY - this.blocks.length) {
+    var block = this.getBlockAtLevel(laserSegmentLoc.y);
+    if (block === null) {
         return Laser.Handling.CONTINUE;
     } else {
-        var yFromTop = this.topY - laserSegmentLoc.y;
-        return this.blocks[Math.floor(yFromTop)].handleLaser(laserSegmentLoc);
+        return block.handleLaser(laserSegmentLoc);
     }
+};
+
+Building.prototype.constructBlockFromSpec = function(spec) {
+    var options = {
+        level: this.level,
+        building: this,
+        scene: this.scene
+    };
+    for (var key in spec) {
+        if (spec.hasOwnProperty(key)) {
+            options[key] = spec[key];
+        }
+    }
+    return new spec.blockConstructor(options);
+};
+
+Building.prototype.replaceBlockSpec = function(block, spec) {
+    var ind = this.blocks.indexOf(block);
+    block.removeFromScene();
+    this.blocks[ind] = this.constructBlockFromSpec(spec);
 };
 
 Building.prototype.ownsSceneObject = function(object) {
@@ -89,7 +108,9 @@ var BuildingCursor = function(options) {
     var defaults = {
         level: null,
         gridX: 0,
-        gridZ: 0
+        gridZ: 0,
+        color: 0xaaccff,
+        y: 0.2
     };
     objectUtil.initWithDefaults(this, defaults, options);
     
@@ -106,7 +127,7 @@ BuildingCursor.prototype = new ThreeSceneObject();
 BuildingCursor.prototype.update = function(deltaTime) {
     this.object.position.x = this.level.gridXToWorld(this.gridX);
     this.object.position.z = this.level.gridZToWorld(this.gridZ);
-    this.object.position.y = 0.2;
+    this.object.position.y = this.y;
     this.object.rotation.y += deltaTime;
 };
 
@@ -120,7 +141,7 @@ BuildingCursor.prototype.createMesh = function() {
         extrudePath: line
     };
     var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    var material = new THREE.MeshPhongMaterial( { color: 0xaaccff, emissive: 0x448888 } );
+    var material = new THREE.MeshPhongMaterial( { color: this.color, emissive: 0x448888 } );
     material.transparent = true;
     material.opacity = 0.7;
 

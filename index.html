@@ -36,6 +36,7 @@
 <script src="src/utilthree.js"></script>
 
 <!-- game specific-->
+<script src="src/editor.js"></script>
 <script src="src/level.js"></script>
 <script src="src/building.js"></script>
 <script src="src/laser.js"></script>
@@ -54,7 +55,31 @@ var Game = function(resizer, renderer) {
     this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress/*, this.upRelease*/);
     this.input.addListener(Gamepad.BUTTONS.DOWN_OR_ANALOG_DOWN, ['down', 's'], this.downPress/*, this.downRelease*/);
     
+    if (DEV_MODE) {
+        this.input.addListener(undefined, ['a'], this.aPress);
+        this.input.addListener(undefined, ['z'], this.zPress);
+        this.input.addListener(undefined, ['o'], this.oPress);
+        this.input.addListener(undefined, ['k'], this.kPress);
+        this.input.addListener(undefined, ['m'], this.mPress);
+    }
+    
     this.initLevel();
+};
+
+Game.prototype.zPress = function() {
+    this.level.editor.zPress();
+};
+Game.prototype.aPress = function() {
+    this.level.editor.aPress();
+};
+Game.prototype.oPress = function() {
+    this.level.editor.oPress();
+};
+Game.prototype.kPress = function() {
+    this.level.editor.kPress();
+};
+Game.prototype.mPress = function() {
+    this.level.editor.mPress();
 };
 
 Game.prototype.upPress = function() {
