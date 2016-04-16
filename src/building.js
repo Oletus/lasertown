@@ -182,6 +182,9 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 };
 
 BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
+BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
+BuildingBlock.mirrorMaterial.transparent = true;
+BuildingBlock.mirrorMaterial.opacity = 0.7;
 
 BuildingBlock.prototype.createMesh = function() {
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -303,10 +306,7 @@ MirrorBlock.prototype = new BuildingBlock();
 
 MirrorBlock.prototype.createMesh = function() {
     var geometry = new THREE.BoxGeometry( 1, 1, 0.15 );
-    var material = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
-    material.transparent = true;
-    material.opacity = 0.7;
-    var mesh = new THREE.Mesh(geometry, material);
+    var mesh = new THREE.Mesh(geometry, BuildingBlock.mirrorMaterial);
     mesh.rotation.y = Math.PI * (0.25 + (this.mirrorDirection ? 0.5 : 0));
     var parent = new THREE.Object3D();
     parent.add(mesh);
