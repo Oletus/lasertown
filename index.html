@@ -32,21 +32,17 @@
 <script src="src/platformingphysics.js"></script>
 <script src="src/unlocker.js"></script>
 <script src="src/renderableobject.js"></script>
+
+<!-- game specific-->
+<script src="src/level.js"></script>
+<script src="src/building.js"></script>
 <script>
 'use strict';
 
 var Game = function(resizer, renderer) {
+    this.resizer = resizer;
     this.renderer = renderer;
     this.renderer.setClearColor( 0xffffff, 1);
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera( 75, resizer.canvas.width / resizer.canvas.height, 1, 10000 );
-    this.camera.position.z = 1000;
-    
-    // Test geometry
-    var geometry = new THREE.BoxGeometry( 200, 200, 200 );
-    var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-    this.mesh = new THREE.Mesh( geometry, material );
-    this.scene.add(this.mesh);
     
     this.time = 0;
 
@@ -54,18 +50,32 @@ var Game = function(resizer, renderer) {
     this.input = new InputMapper(this, numPlayers);
     // Example usage of InputMapper
     //this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress, this.upRelease);
+    
+    this.initLevel();
+};
+
+Game.prototype.setCameraAspect = function(aspect) {
+    if (this.level) {
+        this.level.camera.aspect = aspect;
+        this.level.camera.updateProjectionMatrix();
+    }
+};
+
+Game.prototype.initLevel = function() {
+    this.level = new Level({
+        cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
+    });
 };
 
 Game.prototype.render = function() {
-    this.renderer.render(this.scene, this.camera);
+    this.level.render(this.renderer);
 };
 
 Game.prototype.update = function(deltaTime) {
     this.time += deltaTime;
     this.input.update();
     // Update your level here
-    this.mesh.rotation.x += 0.01;
-    this.mesh.rotation.y += 0.02;
+    this.level.update(deltaTime);
     
     Audio.muteAll(Game.parameters.get('muteAudio'));
 };
@@ -96,8 +106,7 @@ window['start'] = function() {
         setCanvasSizeCallback: function(width, height) {
             renderer.setSize(width, height);
             if (game !== undefined) {
-                game.camera.aspect = width / height;
-                game.camera.updateProjectionMatrix();
+                game.setCameraAspect(width / height);
             }
         }
     });
