@@ -342,3 +342,79 @@ MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
     }
     return newLoc;
 };
+
+/**
+ * @constructor
+ */
+var PeriscopeBlock = function(options) {
+        var defaults = {
+        periscopeDirection: Laser.Direction.POSITIVE_Z,
+        isUpperBlock: true
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    this.initBuildingBlock(options);
+};
+
+PeriscopeBlock.prototype = new BuildingBlock();
+
+PeriscopeBlock.prototype.createMesh = function() {
+    var meshParent = new THREE.Object3D();
+    var geometry = new THREE.BoxGeometry( 1, 1, 0.15 );
+    var mesh = new THREE.Mesh(geometry, BuildingBlock.mirrorMaterial);
+    if (this.periscopeDirection === Laser.Direction.POSITIVE_Z || this.periscopeDirection === Laser.Direction.NEGATIVE_Z) {
+        if (this.isUpperBlock !== (this.periscopeDirection === Laser.Direction.POSITIVE_Z)) {
+            mesh.rotation.x = -Math.PI * 0.25;
+        } else {
+            mesh.rotation.x = Math.PI * 0.25;
+        }
+    }
+    if (this.periscopeDirection === Laser.Direction.POSITIVE_X || this.periscopeDirection === Laser.Direction.NEGATIVE_X) {
+        meshParent.rotation.y = Math.PI * 0.5;
+        if (this.isUpperBlock !== (this.periscopeDirection === Laser.Direction.POSITIVE_X)) {
+            mesh.rotation.x = -Math.PI * 0.25;
+        } else {
+            mesh.rotation.x = Math.PI * 0.25;
+        }
+    }
+    meshParent.add(mesh);
+    var parent = new THREE.Object3D();
+    parent.add(meshParent);
+    return parent;
+};
+
+PeriscopeBlock.prototype.getPair = function() {
+    var blocks = this.building.blocks;
+    var i = blocks.indexOf(this);
+    var pair = null;
+    while (pair === null) {
+        if (this.isUpperBlock) {
+            ++i;
+        } else {
+            --i;
+        }
+        if (i < 0 || i >= blocks.length) {
+            return null;
+        }
+        if (blocks[i] instanceof PeriscopeBlock) {
+            return blocks[i];
+        }
+    }
+    return pair;
+};
+
+PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    var pairBlock = this.getPair();
+    if (pairBlock === null) {
+        return Laser.Handling.STOP;
+    }
+    if (this.periscopeDirection === Laser.oppositeDirection(laserSegmentLoc.direction)) {
+        return new LaserSegmentLocation({
+            originX: this.building.gridX,
+            originZ: this.building.gridZ,
+            y: pairBlock.topY - 0.5,
+            direction: pairBlock.periscopeDirection
+        });
+    } else {
+        return Laser.Handling.STOP;
+    }
+};

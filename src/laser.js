@@ -56,6 +56,15 @@ Laser.Direction = {
     NEGATIVE_Z: 3
 };
 
+
+Laser.cycleDirection = function(direction) {
+    direction += 1;
+    if (direction > Laser.Direction.NEGATIVE_Z) {
+        direction = Laser.Direction.POSITIVE_X;
+    }
+    return direction;
+};
+
 Laser.offsetFromDirection = function(direction) {
     switch (direction) {
         case Laser.Direction.POSITIVE_X:
@@ -66,6 +75,19 @@ Laser.offsetFromDirection = function(direction) {
             return new THREE.Vector3(0, 0, 1);
         case Laser.Direction.NEGATIVE_Z:
             return new THREE.Vector3(0, 0, -1);
+    }
+};
+
+Laser.oppositeDirection = function(direction) {
+    switch (direction) {
+        case Laser.Direction.POSITIVE_X:
+            return Laser.Direction.NEGATIVE_X;
+        case Laser.Direction.NEGATIVE_X:
+            return Laser.Direction.POSITIVE_X;
+        case Laser.Direction.POSITIVE_Z:
+            return Laser.Direction.NEGATIVE_Z;
+        case Laser.Direction.NEGATIVE_Z:
+            return Laser.Direction.POSITIVE_Z;
     }
 };
 

@@ -64,8 +64,24 @@ LevelEditor.prototype.kPress = function() {
     }
 };
 
+LevelEditor.prototype.pPress = function() {
+    var block = this.getChosenBlock();
+    if (block !== null) {
+        var dir = Laser.Direction.POSITIVE_X;
+        if (block instanceof PeriscopeBlock) {
+            dir = Laser.cycleDirection(block.periscopeDirection);
+        }
+        var blockSpec = {
+            blockConstructor: PeriscopeBlock,
+            periscopeDirection: dir,
+            isUpperBlock: block.topY === this.chosenBuilding.topY
+        };
+        this.chosenBuilding.replaceBlockSpec(block, blockSpec);
+    }
+};
+
 LevelEditor.prototype.updateBuildingCursor = function() {
-    this.buildingCursor.y = this.chosenY + 0.5;
+    this.buildingCursor.y = this.chosenY + 0.7;
     this.chosenBuilding = this.level.chosenBuilding;
     if (this.chosenBuilding) {
         this.buildingCursor.gridX = this.chosenBuilding.gridX;
