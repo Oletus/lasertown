@@ -18,6 +18,7 @@ var Level = function(options) {
     this.moveCamera(new THREE.Vector3((this.width - 1) * GRID_SPACING * 0.5, 0, (this.depth - 1) * GRID_SPACING * 0.5));
     
     this.setupLights();
+    this.setupGridGeometry();
     
     this.objects = [];
     for (var x = 0; x < this.width; ++x) {
@@ -46,6 +47,42 @@ Level.prototype.moveCamera = function(lookAt) {
     this.camera.position.x = lookAt.x + 15;
     this.camera.position.y = lookAt.y + 15;
     this.camera.lookAt(lookAt);
+};
+
+Level.prototype.setupGridGeometry = function() {
+    this.gridGeometry = new THREE.Geometry();
+    
+    var gs = GRID_SPACING * 0.5;
+    // A plane with a square hole in the middle
+    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,   0,  -gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( gs,   0,  -gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-0.5,  0,  -0.5));
+    this.gridGeometry.vertices.push(new THREE.Vector3( 0.5,  0,  -0.5));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-0.5,  0,   0.5));
+    this.gridGeometry.vertices.push(new THREE.Vector3( 0.5,  0,   0.5));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,   0,   gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( gs,   0,   gs));
+    this.gridGeometry.faces.push(new THREE.Face3(0, 2, 1));
+    this.gridGeometry.faces.push(new THREE.Face3(1, 2, 3));
+    this.gridGeometry.faces.push(new THREE.Face3(0, 6, 2));
+    this.gridGeometry.faces.push(new THREE.Face3(2, 6, 4));
+    this.gridGeometry.faces.push(new THREE.Face3(1, 3, 5));
+    this.gridGeometry.faces.push(new THREE.Face3(1, 5, 7));
+    this.gridGeometry.faces.push(new THREE.Face3(6, 5, 4));
+    this.gridGeometry.faces.push(new THREE.Face3(6, 7, 5));
+    this.gridGeometry.computeBoundingBox();
+    this.gridGeometry.computeFaceNormals();
+    this.gridGeometry.computeVertexNormals();
+    
+    for (var x = 0; x < this.width; ++x) {
+        for (var z = 0; z < this.depth; ++z) {
+            var material = new THREE.MeshPhongMaterial( { color: 0x88ff88, specular: 0x222222 } );
+            var gridMesh = new THREE.Mesh( this.gridGeometry, material );
+            gridMesh.position.x = x * GRID_SPACING;
+            gridMesh.position.z = z * GRID_SPACING;
+            this.scene.add(gridMesh);
+        }
+    }
 };
 
 Level.prototype.setupLights = function() {
