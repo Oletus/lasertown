@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Lasertown</title>
+<meta charset="UTF-8">
+<!-- output -->
+<script src="src/lib/hsl.js"></script>
+<script src="src/sprite.js"></script>
+<script src="src/animatedsprite.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/canvasresizer.js"></script>
+<script src="src/loadingbar.js"></script>
+<script src="src/particle.js"></script>
+<script src="src/canvasui.js"></script>
+<script src="src/monospacebitmapfont.js"></script>
+<script src="src/lib/three.min.js"></script>
+<!-- dev mode helpers -->
+<script src="src/lib/dat.gui.js"></script>
+<script src="src/gameparameters.js"></script>
+<!-- input -->
+<script src="src/lib/mousetrap.js"></script>
+<script src="src/lib/mousetrap-global-bind.js"></script>
+<script src="src/gamepad.js"></script>
+<script src="src/inputmapper.js"></script>
+
+<script src="src/statemachine.js"></script>
+<script src="src/mainloop.js"></script>
+<script src="src/util2d.js"></script>
+<script src="src/utiljs.js"></script>
+<script src="src/hitbox.js"></script>
+<script src="src/tilemap.js"></script>
+<script src="src/platformingphysics.js"></script>
+<script src="src/unlocker.js"></script>
+<script src="src/renderableobject.js"></script>
+<script>
+'use strict';
+
+var Game = function(resizer, renderer) {
+    this.renderer = renderer;
+    this.renderer.setClearColor( 0xffffff, 1);
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera( 75, resizer.canvas.width / resizer.canvas.height, 1, 10000 );
+    this.camera.position.z = 1000;
+    
+    // Test geometry
+    var geometry = new THREE.BoxGeometry( 200, 200, 200 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+    this.mesh = new THREE.Mesh( geometry, material );
+    this.scene.add(this.mesh);
+    
+    this.time = 0;
+
+    var numPlayers = 1;
+    this.input = new InputMapper(this, numPlayers);
+    // Example usage of InputMapper
+    //this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress, this.upRelease);
+};
+
+Game.prototype.render = function() {
+    this.renderer.render(this.scene, this.camera);
+};
+
+Game.prototype.update = function(deltaTime) {
+    this.time += deltaTime;
+    this.input.update();
+    // Update your level here
+    this.mesh.rotation.x += 0.01;
+    this.mesh.rotation.y += 0.02;
+    
+    Audio.muteAll(Game.parameters.get('muteAudio'));
+};
+
+// Parameters added here can be tuned at run time when in developer mode
+Game.parameters = new GameParameters({
+    'muteAudio': {initial: false}
+});
+
+var DEV_MODE = (window.location.href.indexOf("?devMode") != -1);
+
+window['start'] = function() {
+    var DEBUG_MAIN_LOOP = DEV_MODE && true; // Set to true to allow fast-forwarding main loop with 'f'
+    Game.parameters.set('muteAudio', (DEV_MODE && true)); // Set to true if sounds annoy developers
+    if (DEV_MODE) {
+        Game.parameters.initGUI();
+    }
+
+    var renderer = new THREE.WebGLRenderer();
+    
+    var game;
+    
+    var resizer = new CanvasResizer({
+        mode: CanvasResizer.Mode.FIXED_ASPECT_RATIO,
+        canvas: renderer.domElement,
+        width: 16,
+        height: 9,
+        setCanvasSizeCallback: function(width, height) {
+            renderer.setSize(width, height);
+            if (game !== undefined) {
+                game.camera.aspect = width / height;
+                game.camera.updateProjectionMatrix();
+            }
+        }
+    });
+    game = new Game(resizer, renderer);
+    startMainLoop([resizer, game, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
+};
+</script>
+</head>
+
+<body onload="start()" style="background: black;">
+</body>
+
+</html>

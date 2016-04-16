@@ -1,0 +1,15 @@
+{
+  "name": "gameutils.js",
+  "version": "0.7.0",
+  "description": "Gameutils.js helper library",
+  "repository": "https://github.com/Oletus/gameutils.js.git",
+  "license": "MIT",
+  "dependencies": {
+    "howler": "^1.1.28",
+    "tween": "^0.9.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-fluent-ffmpeg": "^1.0.2"
+  }
+}
