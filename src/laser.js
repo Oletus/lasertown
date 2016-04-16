@@ -8,7 +8,7 @@ var LaserSegmentLocation = function(options) {
         originX: -1,
         originZ: 2,
         y: 1.5,
-        direction: LaserSegment.Direction.POSITIVE_X,
+        direction: Laser.Direction.POSITIVE_X,
     };
     objectUtil.initWithDefaults(this, defaults, options);
 };
@@ -49,15 +49,22 @@ Laser.Handling = {
     INFINITY: 2
 };
 
+Laser.Direction = {
+    POSITIVE_X: 0,
+    NEGATIVE_X: 1,
+    POSITIVE_Z: 2,
+    NEGATIVE_Z: 3
+};
+
 Laser.offsetFromDirection = function(direction) {
     switch (direction) {
-        case LaserSegment.Direction.POSITIVE_X:
+        case Laser.Direction.POSITIVE_X:
             return new THREE.Vector3(1, 0, 0);
-        case LaserSegment.Direction.NEGATIVE_X:
+        case Laser.Direction.NEGATIVE_X:
             return new THREE.Vector3(-1, 0, 0);
-        case LaserSegment.Direction.POSITIVE_Z:
+        case Laser.Direction.POSITIVE_Z:
             return new THREE.Vector3(0, 0, 1);
-        case LaserSegment.Direction.NEGATIVE_Z:
+        case Laser.Direction.NEGATIVE_Z:
             return new THREE.Vector3(0, 0, -1);
     }
 };
@@ -163,28 +170,21 @@ var LaserSegment = function(options) {
 
 LaserSegment.prototype = new ThreeSceneObject();
 
-LaserSegment.Direction = {
-    POSITIVE_X: 0,
-    NEGATIVE_X: 1,
-    POSITIVE_Z: 2,
-    NEGATIVE_Z: 3
-};
-
 LaserSegment.prototype.update = function(deltaTime) {
     this.origin.position.y = this.loc.y;
     this.origin.position.x = this.level.gridXToWorld(this.loc.originX);
     this.origin.position.z = this.level.gridZToWorld(this.loc.originZ);
     switch (this.loc.direction) {
-        case LaserSegment.Direction.POSITIVE_X:
+        case Laser.Direction.POSITIVE_X:
             this.origin.rotation.y = Math.PI * 0.5;
             break;
-        case LaserSegment.Direction.NEGATIVE_X:
+        case Laser.Direction.NEGATIVE_X:
             this.origin.rotation.y = -Math.PI * 0.5;
             break;
-        case LaserSegment.Direction.POSITIVE_Z:
+        case Laser.Direction.POSITIVE_Z:
             this.origin.rotation.y = 0;
             break;
-        case LaserSegment.Direction.NEGATIVE_Z:
+        case Laser.Direction.NEGATIVE_Z:
             this.origin.rotation.y = Math.PI;
             break;
     }

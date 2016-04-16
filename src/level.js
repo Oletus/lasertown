@@ -27,7 +27,7 @@ var Level = function(options) {
         for (var z = 0; z < this.depth; ++z) {
             var building = new Building();
             var blocksSpec = [
-                {blockConstructor: MirrorBlock, mirrorDirection: true},
+                {blockConstructor: HoleBlock, mirrorDirection: true},
                 {blockConstructor: StopBlock}
             ];
             building.initBuilding({
@@ -116,30 +116,9 @@ Level.prototype.moveCamera = function(lookAt) {
 };
 
 Level.prototype.setupGridGeometry = function() {
-    this.gridGeometry = new THREE.Geometry();
-    
-    var gs = GRID_SPACING * 0.5;
-    var hs = 0.5; // hole size
-    // A plane with a square hole in the middle
-    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,  0,  -gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( gs,  0,  -gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-hs,  0,  -hs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( hs,  0,  -hs));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-hs,  0,   hs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( hs,  0,   hs));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,  0,   gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( gs,  0,   gs));
-    this.gridGeometry.faces.push(new THREE.Face3(0, 2, 1));
-    this.gridGeometry.faces.push(new THREE.Face3(1, 2, 3));
-    this.gridGeometry.faces.push(new THREE.Face3(0, 6, 2));
-    this.gridGeometry.faces.push(new THREE.Face3(2, 6, 4));
-    this.gridGeometry.faces.push(new THREE.Face3(1, 3, 5));
-    this.gridGeometry.faces.push(new THREE.Face3(1, 5, 7));
-    this.gridGeometry.faces.push(new THREE.Face3(6, 5, 4));
-    this.gridGeometry.faces.push(new THREE.Face3(6, 7, 5));
-    this.gridGeometry.computeBoundingBox();
-    this.gridGeometry.computeFaceNormals();
-    this.gridGeometry.computeVertexNormals();
+    var faceSize = GRID_SPACING;
+    var holeSize = 1.0; // hole size
+    this.gridGeometry = utilTHREE.createPlaneWithHole(faceSize, holeSize);
     
     for (var x = 0; x < this.width; ++x) {
         for (var z = 0; z < this.depth; ++z) {

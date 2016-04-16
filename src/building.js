@@ -84,10 +84,12 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.stationary = true;
 };
 
+BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
+
 BuildingBlock.prototype.createMesh = function() {
     // Test geometry
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshPhongMaterial( { color: 0xff8888, specular: 0xffffff } );
+    var material = BuildingBlock.wallMaterial;
     return new THREE.Mesh(geometry, material);
 };
 
@@ -144,6 +146,66 @@ GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
 /**
  * @constructor
  */
+var HoleBlock = function(options) {
+    var defaults = {
+        holeDirection: true // true means hole letting through lasers between positive x and negative x.
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    this.initBuildingBlock(options);
+};
+
+HoleBlock.prototype = new BuildingBlock();
+
+HoleBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    var zLaser = (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z || laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z);
+    if (this.holeDirection) {
+        if (zLaser) {
+            return Laser.Handling.STOP;
+        } else {
+            return Laser.Handling.CONTINUE;
+        }
+    } else {
+        if (zLaser) {
+            return Laser.Handling.CONTINUE;
+        } else {
+            return Laser.Handling.STOP;
+        }
+    }
+};
+
+HoleBlock.prototype.createMesh = function() {
+    var shape = new THREE.Shape();
+    shape.moveTo(-0.5, -0.5);
+    shape.lineTo( 0.5, -0.5);
+    shape.lineTo( 0.5,  0.5);
+    shape.lineTo(-0.5,  0.5);
+    var hs = 0.3;
+    var hole = new THREE.Path();
+    hole.moveTo(-hs, -hs);
+    hole.lineTo( hs, -hs);
+    hole.lineTo( hs,  hs);
+    hole.lineTo(-hs,  hs);
+    shape.holes.push(hole);
+
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.3), new THREE.Vector3(0, 0, 0.3));
+    var extrudeSettings = {
+        steps: 3,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    var material = BuildingBlock.wallMaterial;
+    var mesh = new THREE.Mesh(geometry, material);
+    var parent = new THREE.Object3D();
+    parent.add(mesh);
+    parent.rotation.y = Math.PI * (this.holeDirection ? 0.5 : 0);
+    return parent;
+};
+
+
+/**
+ * @constructor
+ */
 var MirrorBlock = function(options) {
     var defaults = {
         mirrorDirection: true // true means positive x gets mirrored to positive z.
@@ -173,24 +235,24 @@ MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
         y: laserSegmentLoc.y
     });
     if (this.mirrorDirection) {
-        if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_Z) {
-            newLoc.direction = LaserSegment.Direction.POSITIVE_X;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_X) {
-            newLoc.direction = LaserSegment.Direction.POSITIVE_Z;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_Z) {
-            newLoc.direction = LaserSegment.Direction.NEGATIVE_X;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_X) {
-            newLoc.direction = LaserSegment.Direction.NEGATIVE_Z;
+        if (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z) {
+            newLoc.direction = Laser.Direction.POSITIVE_X;
+        } else if (laserSegmentLoc.direction === Laser.Direction.POSITIVE_X) {
+            newLoc.direction = Laser.Direction.POSITIVE_Z;
+        } else if (laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z) {
+            newLoc.direction = Laser.Direction.NEGATIVE_X;
+        } else if (laserSegmentLoc.direction === Laser.Direction.NEGATIVE_X) {
+            newLoc.direction = Laser.Direction.NEGATIVE_Z;
         }
     } else {
-        if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_Z) {
-            newLoc.direction = LaserSegment.Direction.NEGATIVE_X;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_X) {
-            newLoc.direction = LaserSegment.Direction.NEGATIVE_Z;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_Z) {
-            newLoc.direction = LaserSegment.Direction.POSITIVE_X;
-        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_X) {
-            newLoc.direction = LaserSegment.Direction.POSITIVE_Z;
+        if (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z) {
+            newLoc.direction = Laser.Direction.NEGATIVE_X;
+        } else if (laserSegmentLoc.direction === Laser.Direction.POSITIVE_X) {
+            newLoc.direction = Laser.Direction.NEGATIVE_Z;
+        } else if (laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z) {
+            newLoc.direction = Laser.Direction.POSITIVE_X;
+        } else if (laserSegmentLoc.direction === Laser.Direction.NEGATIVE_X) {
+            newLoc.direction = Laser.Direction.POSITIVE_Z;
         }
     }
     return newLoc;
