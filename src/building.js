@@ -16,6 +16,7 @@ Building.prototype.initBuilding = function(options) {
         blocksSpec: [] // Listed from top downwards
     };
     objectUtil.initWithDefaults(this, defaults, options);
+    this.topYTarget = this.topY;
     this.blocks = [];
     for (var i = 0; i < this.blocksSpec.length; ++i) {
         var spec = this.blocksSpec[i];
@@ -35,6 +36,7 @@ Building.prototype.initBuilding = function(options) {
 };
 
 Building.prototype.update = function(deltaTime) {
+    this.topY = towardsValue(this.topY, this.topYTarget, deltaTime * 7);
     for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].topY = this.topY - i;
         this.blocks[i].update(deltaTime);
@@ -45,8 +47,8 @@ Building.prototype.upPress = function() {
     if (this.stationary) {
         return;
     }
-    if (this.topY < this.blocks.length) {
-        ++this.topY;
+    if (this.topYTarget < this.blocks.length) {
+        ++this.topYTarget;
     }
 };
 
@@ -54,8 +56,8 @@ Building.prototype.downPress = function() {
     if (this.stationary) {
         return;
     }
-    if (this.topY > 0) {
-        --this.topY;
+    if (this.topYTarget > 0) {
+        --this.topYTarget;
     }
 };
 
