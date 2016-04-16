@@ -12,8 +12,8 @@ Building.prototype.initBuilding = function(options) {
     var defaults = {
         gridX: 0,
         gridZ: 0,
-        topY: mathUtil.randomInt(1) + 1,
-        height: 2,
+        topY: mathUtil.randomInt(2) + 1,
+        height: 3,
         level: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
@@ -68,8 +68,11 @@ BlockBuilding.prototype = new Building();
  */
 var MirrorBuilding = function(options) {
     this.initBuilding(options);
+    var defaults = {
+        mirrorDirection: true // true means positive x gets mirrored to positive z.
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
     this.stationary = false;
-    this.mirrorDirection = true; // true means positive x gets mirrored to positive z.
 };
 
 MirrorBuilding.prototype = new Building();

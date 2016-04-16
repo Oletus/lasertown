@@ -13,6 +13,22 @@ var LaserSegmentLocation = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
 };
 
+LaserSegmentLocation.prototype.copy = function() {
+    return new LaserSegmentLocation({
+        originX: this.originX,
+        originZ: this.originZ,
+        y: this.y,
+        direction: this.direction
+    });
+};
+
+LaserSegmentLocation.prototype.equals = function(other) {
+    return this.originX === other.originX &&
+           this.originZ === other.originZ &&
+           this.y === other.y &&
+           this.direction === other.direction;
+};
+
 
 /**
  * @constructor
@@ -35,9 +51,18 @@ Laser.offsetFromDirection = function(direction) {
             return new THREE.Vector3(-1, 0, 0);
         case LaserSegment.Direction.POSITIVE_Z:
             return new THREE.Vector3(0, 0, 1);
-        case LaserSegment.Direction.NEGATIVE_X:
+        case LaserSegment.Direction.NEGATIVE_Z:
             return new THREE.Vector3(0, 0, -1);
     }
+};
+
+Laser.inPath = function(path, segment) {
+    for (var i = 0; i < path.length; ++i) {
+        if (path[i].equals(segment)) {
+            return true;
+        }
+    }
+    return false;
 };
 
 Laser.prototype.update = function(deltaTime) {
@@ -48,6 +73,7 @@ Laser.prototype.update = function(deltaTime) {
 
     this.segments[segmentIndex].length = 0;
     var laserContinues = true;
+    var path = [];
     while (laserContinues) {
         var offset = Laser.offsetFromDirection(loc.direction);
         x = Math.round(x + offset.x);
@@ -63,11 +89,17 @@ Laser.prototype.update = function(deltaTime) {
                 laserContinues = false;
                 this.segments[segmentIndex].length -= 0.5;  // stop at building wall
             } else if (handling instanceof LaserSegmentLocation) {
-                ++segmentIndex;
-                this.ensureSegmentExists(segmentIndex);
-                this.segments[segmentIndex].loc = handling;
-                loc = this.segments[segmentIndex].loc;
-                this.segments[segmentIndex].length = 0;
+                // Make sure that laser doesn't loop
+                if (Laser.inPath(path, handling)) {
+                    laserContinues = false;
+                } else {
+                    path.push(handling.copy());
+                    ++segmentIndex;
+                    this.ensureSegmentExists(segmentIndex);
+                    this.segments[segmentIndex].loc = handling;
+                    loc = this.segments[segmentIndex].loc;
+                    this.segments[segmentIndex].length = 0;
+                }
             }
         }
     }
@@ -149,7 +181,7 @@ LaserSegment.prototype.update = function(deltaTime) {
         case LaserSegment.Direction.POSITIVE_Z:
             this.origin.rotation.y = 0;
             break;
-        case LaserSegment.Direction.NEGATIVE_X:
+        case LaserSegment.Direction.NEGATIVE_Z:
             this.origin.rotation.y = Math.PI;
             break;
     }

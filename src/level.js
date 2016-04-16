@@ -29,7 +29,8 @@ var Level = function(options) {
                 level: this,
                 scene: this.scene,
                 gridX: x,
-                gridZ: z
+                gridZ: z,
+                mirrorDirection: Math.random() < 0.5
             });
             this.objects.push(building);
             this.buildingGrid[x].push(building);
