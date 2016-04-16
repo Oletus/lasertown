@@ -5,21 +5,73 @@
  */
 var Building = function() {
 };
-    
-Building.prototype = new ThreeSceneObject();
 
 Building.prototype.initBuilding = function(options) {
     var defaults = {
+        level: null,
+        scene: null,
         gridX: 0,
         gridZ: 0,
         topY: 2,
-        height: 3,
+        blocksSpec: [] // Listed from top downwards
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    this.blocks = [];
+    for (var i = 0; i < this.blocksSpec.length; ++i) {
+        var spec = this.blocksSpec[i];
+        var options = {
+            level: this.level,
+            building: this,
+            scene: this.scene
+        };
+        for (var key in spec) {
+            if (spec.hasOwnProperty(key)) {
+                options[key] = spec[key];
+            }
+        }
+        this.blocks.push(new spec.blockConstructor(options));
+    }
+    this.stationary = false;
+};
+
+Building.prototype.update = function(deltaTime) {
+    for (var i = 0; i < this.blocks.length; ++i) {
+        this.blocks[i].topY = this.topY - i;
+        this.blocks[i].update(deltaTime);
+    }
+};
+
+/**
+ * @return {Object} true if laser is let through. Null if laser stops. LaserSegmentLocation object if a new segment is started. 
+ */
+Building.prototype.handleLaser = function(laserSegmentLoc) {
+    if (laserSegmentLoc.y >= this.topY || laserSegmentLoc.y <= this.topY - this.blocks.length) {
+        return Laser.Handling.CONTINUE;
+    } else {
+        var yFromTop = this.topY - laserSegmentLoc.y;
+        return this.blocks[Math.floor(yFromTop)].handleLaser(laserSegmentLoc);
+    }
+};
+
+/**
+ * @constructor
+ */
+var BuildingBlock = function() {
+    
+};
+
+BuildingBlock.prototype = new ThreeSceneObject();
+
+BuildingBlock.prototype.initBuildingBlock = function(options) {
+    var defaults = {
+        topY: 2,
+        building: null,
         level: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
     // Test geometry
-    var geometry = new THREE.BoxGeometry( 1, this.height, 1 );
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = new THREE.MeshPhongMaterial( { color: 0xff8888, specular: 0xffffff } );
     this.baseMesh = new THREE.Mesh( geometry, material );
 
@@ -35,59 +87,73 @@ Building.prototype.initBuilding = function(options) {
     this.stationary = true;
 };
 
-Building.prototype.update = function(deltaTime) {
-    this.object.position.x = this.level.gridXToWorld(this.gridX);
-    this.object.position.z = this.level.gridZToWorld(this.gridZ);
-    this.object.position.y = this.topY - this.height * 0.5;
+BuildingBlock.prototype.update = function(deltaTime) {
+    this.object.position.x = this.level.gridXToWorld(this.building.gridX);
+    this.object.position.z = this.level.gridZToWorld(this.building.gridZ);
+    this.object.position.y = this.topY - 0.5;
 };
+
 
 /**
- * @return {Object} true if laser is let through. Null if laser stops. LaserSegmentLocation object if a new segment is started. 
+ * @constructor
  */
-Building.prototype.handleLaser = function(laserSegmentLoc) {
-    if (laserSegmentLoc.y > this.topY) {
-        return Laser.Handling.CONTINUE;
-    } else {
-        return Laser.Handling.STOP;
-    }
-};
-
 var GoalBuilding = function(options) {
+    options.blocksSpec = [
+        {blockConstructor: GoalBlock},
+        {blockConstructor: StopBlock}
+    ];
     this.initBuilding(options);
     this.stationary = true;
 };
 
 GoalBuilding.prototype = new Building();
 
+
 /**
  * @constructor
  */
-var BlockBuilding = function(options) {
-    this.initBuilding(options);
-    this.stationary = true;
+var StopBlock = function(options) {
+    this.initBuildingBlock(options);
 };
 
-BlockBuilding.prototype = new Building();
+StopBlock.prototype = new BuildingBlock();
+
+StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    return Laser.Handling.STOP;
+};
 
 
 /**
  * @constructor
  */
-var MirrorBuilding = function(options) {
-    this.initBuilding(options);
+var GoalBlock = function(options) {
+    this.initBuildingBlock(options);
+};
+
+GoalBlock.prototype = new BuildingBlock();
+
+GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    return Laser.Handling.INFINITY;
+};
+
+
+/**
+ * @constructor
+ */
+var MirrorBlock = function(options) {
+    this.initBuildingBlock(options);
     var defaults = {
         mirrorDirection: true // true means positive x gets mirrored to positive z.
     };
     objectUtil.initWithDefaults(this, defaults, options);
-    this.stationary = false;
 };
 
-MirrorBuilding.prototype = new Building();
+MirrorBlock.prototype = new BuildingBlock();
 
-MirrorBuilding.prototype.mirror = function(laserSegmentLoc) {
+MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
     var newLoc = new LaserSegmentLocation({
-        originX: this.gridX,
-        originZ: this.gridZ,
+        originX: this.building.gridX,
+        originZ: this.building.gridZ,
         y: laserSegmentLoc.y
     });
     if (this.mirrorDirection) {
@@ -112,12 +178,4 @@ MirrorBuilding.prototype.mirror = function(laserSegmentLoc) {
         }
     }
     return newLoc;
-};
-
-MirrorBuilding.prototype.handleLaser = function(laserSegmentLoc) {
-    if (laserSegmentLoc.y > this.topY - 1 && laserSegmentLoc.y < this.topY) {
-        return this.mirror(laserSegmentLoc);
-    } else {
-        return Building.prototype.handleLaser.call(this, laserSegmentLoc);
-    }
 };

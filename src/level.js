@@ -25,9 +25,15 @@ var Level = function(options) {
     for (var x = 0; x < this.width; ++x) {
         this.buildingGrid.push([]);
         for (var z = 0; z < this.depth; ++z) {
-            var building = new MirrorBuilding({
+            var building = new Building();
+            var blocksSpec = [
+                {blockConstructor: MirrorBlock, mirrorDirection: true},
+                {blockConstructor: StopBlock}
+            ];
+            building.initBuilding({
                 level: this,
                 scene: this.scene,
+                blocksSpec: blocksSpec,
                 gridX: x,
                 gridZ: z,
                 mirrorDirection: Math.random() < 0.5
