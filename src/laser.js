@@ -19,19 +19,12 @@ var LaserSegmentLocation = function(options) {
  */
 var Laser = function(options) {
     var defaults = {
-        loc: new LaserSegmentLocation({}),
         level: null,
         scene: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.segments = [];
-    
-    this.segments.push(new LaserSegment({
-        loc: this.loc,
-        level: this.level,
-        scene: this.scene,
-        laser: this
-    }));
+    this.ensureSegmentExists(0);
 };
 
 Laser.offsetFromDirection = function(direction) {
@@ -53,31 +46,55 @@ Laser.prototype.update = function(deltaTime) {
     var x = loc.originX;
     var z = loc.originZ;
 
-    var segmentLength = 0;
+    this.segments[segmentIndex].length = 0;
     var laserContinues = true;
     while (laserContinues) {
         var offset = Laser.offsetFromDirection(loc.direction);
         x = Math.round(x + offset.x);
         z = Math.round(z + offset.z);
-        segmentLength += GRID_SPACING;
+        this.segments[segmentIndex].length += GRID_SPACING;
         var building = this.level.getBuildingFromGrid(x, z);
         if (!building) {
             laserContinues = false;
-            segmentLength += GRID_SPACING * 10;
+            this.segments[segmentIndex].length += GRID_SPACING * 10; // go beyond the edge of the level
         } else {
             var handling = building.handleLaser(loc);
             if (handling === null) {
                 laserContinues = false;
-                segmentLength -= 0.5;  // stop at building wall
+                this.segments[segmentIndex].length -= 0.5;  // stop at building wall
+            } else if (handling instanceof LaserSegmentLocation) {
+                ++segmentIndex;
+                this.ensureSegmentExists(segmentIndex);
+                this.segments[segmentIndex].loc = handling;
+                loc = this.segments[segmentIndex].loc;
+                this.segments[segmentIndex].length = 0;
             }
         }
-        this.segments[segmentIndex].length = segmentLength;
     }
+    this.pruneSegments(segmentIndex + 1);
     for (var i = 0; i < this.segments.length; ++i) {
         this.segments[i].update(deltaTime);
     }
 };
 
+Laser.prototype.ensureSegmentExists = function(i) {
+    if (i >= this.segments.length) {
+        this.segments.push(new LaserSegment({
+            level: this.level,
+            scene: this.scene,
+            laser: this
+        }));
+    }
+};
+
+Laser.prototype.pruneSegments = function(startFrom) {
+    if (startFrom < this.segments.length) {
+        for (var i = startFrom; i < this.segments.length; ++i) {
+            this.segments[i].removeFromScene();
+        }
+        this.segments.splice(startFrom);
+    }
+};
 
 /**
  * @constructor

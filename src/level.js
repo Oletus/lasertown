@@ -25,7 +25,7 @@ var Level = function(options) {
     for (var x = 0; x < this.width; ++x) {
         this.buildingGrid.push([]);
         for (var z = 0; z < this.depth; ++z) {
-            var building = new BlockBuilding({
+            var building = new MirrorBuilding({
                 level: this,
                 scene: this.scene,
                 gridX: x,

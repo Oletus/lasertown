@@ -69,6 +69,45 @@ BlockBuilding.prototype = new Building();
 var MirrorBuilding = function(options) {
     this.initBuilding(options);
     this.stationary = false;
+    this.mirrorDirection = true; // true means positive x gets mirrored to positive z.
 };
 
 MirrorBuilding.prototype = new Building();
+
+MirrorBuilding.prototype.mirror = function(laserSegmentLoc) {
+    var newLoc = new LaserSegmentLocation({
+        originX: this.gridX,
+        originZ: this.gridZ,
+        y: laserSegmentLoc.y
+    });
+    if (this.mirrorDirection) {
+        if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_Z) {
+            newLoc.direction = LaserSegment.Direction.POSITIVE_X;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_X) {
+            newLoc.direction = LaserSegment.Direction.POSITIVE_Z;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_Z) {
+            newLoc.direction = LaserSegment.Direction.NEGATIVE_X;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_X) {
+            newLoc.direction = LaserSegment.Direction.NEGATIVE_Z;
+        }
+    } else {
+        if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_Z) {
+            newLoc.direction = LaserSegment.Direction.NEGATIVE_X;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.POSITIVE_X) {
+            newLoc.direction = LaserSegment.Direction.NEGATIVE_Z;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_Z) {
+            newLoc.direction = LaserSegment.Direction.POSITIVE_X;
+        } else if (laserSegmentLoc.direction === LaserSegment.Direction.NEGATIVE_X) {
+            newLoc.direction = LaserSegment.Direction.POSITIVE_Z;
+        }
+    }
+    return newLoc;
+};
+
+MirrorBuilding.prototype.handleLaser = function(laserSegmentLoc) {
+    if (laserSegmentLoc.y > this.topY - 1 && laserSegmentLoc.y < this.topY) {
+        return this.mirror(laserSegmentLoc);
+    } else {
+        return Building.prototype.handleLaser.call(this, laserSegmentLoc);
+    }
+};
