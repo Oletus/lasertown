@@ -53,15 +53,16 @@ Level.prototype.setupGridGeometry = function() {
     this.gridGeometry = new THREE.Geometry();
     
     var gs = GRID_SPACING * 0.5;
+    var hs = 0.5; // hole size
     // A plane with a square hole in the middle
-    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,   0,  -gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( gs,   0,  -gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-0.5,  0,  -0.5));
-    this.gridGeometry.vertices.push(new THREE.Vector3( 0.5,  0,  -0.5));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-0.5,  0,   0.5));
-    this.gridGeometry.vertices.push(new THREE.Vector3( 0.5,  0,   0.5));
-    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,   0,   gs));
-    this.gridGeometry.vertices.push(new THREE.Vector3( gs,   0,   gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,  0,  -gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( gs,  0,  -gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-hs,  0,  -hs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( hs,  0,  -hs));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-hs,  0,   hs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( hs,  0,   hs));
+    this.gridGeometry.vertices.push(new THREE.Vector3(-gs,  0,   gs));
+    this.gridGeometry.vertices.push(new THREE.Vector3( gs,  0,   gs));
     this.gridGeometry.faces.push(new THREE.Face3(0, 2, 1));
     this.gridGeometry.faces.push(new THREE.Face3(1, 2, 3));
     this.gridGeometry.faces.push(new THREE.Face3(0, 6, 2));
