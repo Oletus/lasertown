@@ -92,7 +92,11 @@ Building.prototype.constructBlockFromSpec = function(spec) {
             options[key] = spec[key];
         }
     }
-    return new spec.blockConstructor(options);
+    var block = new spec.blockConstructor(options);
+    if (this.stationary) {
+        block.setStationary(this.stationary);
+    }
+    return block;
 };
 
 Building.prototype.addBlock = function(spec) {
@@ -118,6 +122,15 @@ Building.prototype.ownsSceneObject = function(object) {
         }
     }
     return false;
+};
+
+Building.prototype.setStationary = function(stationary) {
+    if (this.stationary !== stationary) {
+        this.stationary = stationary;
+        for (var i = 0; i < this.blocks.length; ++i) {
+            this.blocks[i].setStationary(stationary);
+        }
+    }
 };
 
 /**
@@ -198,7 +211,21 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.stationary = true;
 };
 
+BuildingBlock.prototype.setStationary = function(stationary) {
+    this.object.traverse(function(obj) {
+        if (obj instanceof THREE.Mesh) {
+            if (obj.material === BuildingBlock.wallMaterial && stationary) {
+                obj.material = BuildingBlock.stationaryWallMaterial;
+            } else if (obj.material === BuildingBlock.stationaryWallMaterial && !stationary) {
+                obj.material = BuildingBlock.wallMaterial;
+            }
+        }
+    });
+    
+};
+
 BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
+BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial.transparent = true;
 BuildingBlock.mirrorMaterial.opacity = 0.7;
