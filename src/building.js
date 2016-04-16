@@ -41,6 +41,24 @@ Building.prototype.update = function(deltaTime) {
     }
 };
 
+Building.prototype.upPress = function() {
+    if (this.stationary) {
+        return;
+    }
+    if (this.topY < this.blocks.length) {
+        ++this.topY;
+    }
+};
+
+Building.prototype.downPress = function() {
+    if (this.stationary) {
+        return;
+    }
+    if (this.topY > 0) {
+        --this.topY;
+    }
+};
+
 /**
  * @return {Object} true if laser is let through. Null if laser stops. LaserSegmentLocation object if a new segment is started. 
  */

@@ -160,7 +160,6 @@ Level.prototype.setCursorPosition = function(viewportPos) {
     this.chosenBuilding = null;
     if (intersects.length > 0) {
         var nearest = intersects[0];
-        //nearest.object.material.color.set( 0xff0000 );
         console.log(nearest.object);
         for (var i = 0; i < this.objects.length; ++i) {
             if (this.objects[i] instanceof Building && this.objects[i].ownsSceneObject(nearest.object)) {
@@ -181,3 +180,14 @@ Level.prototype.updateChosenBuilding = function() {
     }
 };
 
+Level.prototype.upPress = function() {
+    if (this.chosenBuilding !== null) {
+        this.chosenBuilding.upPress();
+    }
+};
+
+Level.prototype.downPress = function() {
+    if (this.chosenBuilding !== null) {
+        this.chosenBuilding.downPress();
+    }
+};

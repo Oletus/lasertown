@@ -51,10 +51,18 @@ var Game = function(resizer, renderer) {
 
     var numPlayers = 1;
     this.input = new InputMapper(this, numPlayers);
-    // Example usage of InputMapper
-    //this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress, this.upRelease);
+    this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress/*, this.upRelease*/);
+    this.input.addListener(Gamepad.BUTTONS.DOWN_OR_ANALOG_DOWN, ['down', 's'], this.downPress/*, this.downRelease*/);
     
     this.initLevel();
+};
+
+Game.prototype.upPress = function() {
+    this.level.upPress();
+};
+
+Game.prototype.downPress = function() {
+    this.level.downPress();
 };
 
 Game.prototype.mouseMove = function(event) {
