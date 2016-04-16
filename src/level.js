@@ -16,6 +16,7 @@ var Level = function(options) {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
     this.moveCamera(new THREE.Vector3((this.width - 1) * GRID_SPACING * 0.5, 0, (this.depth - 1) * GRID_SPACING * 0.5));
+    this.raycaster = new THREE.Raycaster();
     
     this.setupLights();
     this.setupGridGeometry();
@@ -57,6 +58,14 @@ var Level = function(options) {
     });
     this.objects.push(this.goal);
     this.state = new StateMachine({stateSet: Level.State, id: Level.State.IN_PROGRESS});
+    this.chosenBuilding = null;
+    
+    this.buildingCursor = new BuildingCursor({
+        level: this,
+        scene: this.scene
+    });
+    this.objects.push(this.buildingCursor);
+    this.updateChosenBuilding();
 };
 
 Level.State = {
@@ -144,3 +153,31 @@ Level.prototype.setupLights = function() {
     directionalLight.position.set(0.5, 1, -1).normalize();
     this.scene.add(directionalLight);
 };
+
+Level.prototype.setCursorPosition = function(viewportPos) {
+    this.raycaster.setFromCamera(viewportPos, this.camera);
+    var intersects = this.raycaster.intersectObjects(this.scene.children, true);
+    this.chosenBuilding = null;
+    if (intersects.length > 0) {
+        var nearest = intersects[0];
+        //nearest.object.material.color.set( 0xff0000 );
+        console.log(nearest.object);
+        for (var i = 0; i < this.objects.length; ++i) {
+            if (this.objects[i] instanceof Building && this.objects[i].ownsSceneObject(nearest.object)) {
+                this.chosenBuilding = this.objects[i];
+            }
+        }
+    }
+    this.updateChosenBuilding();
+};
+
+Level.prototype.updateChosenBuilding = function() {
+    if (this.chosenBuilding === null) {
+        this.buildingCursor.removeFromScene();
+    } else {
+        this.buildingCursor.gridX = this.chosenBuilding.gridX;
+        this.buildingCursor.gridZ = this.chosenBuilding.gridZ;
+        this.buildingCursor.addToScene();
+    }
+};
+

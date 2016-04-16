@@ -57,6 +57,17 @@ var Game = function(resizer, renderer) {
     this.initLevel();
 };
 
+Game.prototype.mouseMove = function(event) {
+    this.level.setCursorPosition(this.viewportPos(event));
+};
+
+Game.prototype.viewportPos = function(event) {
+    var canvasPos = this.resizer.getCanvasPosition(event);
+    canvasPos.x = 2 * canvasPos.x / this.resizer.canvas.width - 1;
+    canvasPos.y = 1 - 2 * canvasPos.y / this.resizer.canvas.height;
+    return new THREE.Vector3(canvasPos.x, canvasPos.y, 0);
+};
+
 Game.prototype.setCameraAspect = function(aspect) {
     if (this.level) {
         this.level.camera.aspect = aspect;
@@ -113,7 +124,15 @@ window['start'] = function() {
             }
         }
     });
+    var eventListener = function(e) {
+        if (e.type === 'mousemove') {
+            game.mouseMove(e);
+        }
+        e.preventDefault();
+    };
+    
     game = new Game(resizer, renderer);
+    resizer.canvas.addEventListener('mousemove', eventListener);
     startMainLoop([resizer, game, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
 };
 </script>

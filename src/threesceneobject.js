@@ -29,5 +29,16 @@ ThreeSceneObject.prototype.removeFromScene = function() {
     }
 };
 
+ThreeSceneObject.prototype.ownsSceneObject = function(object) {
+    var matches = false;
+    this.object.traverse(function(obj) {
+        if (obj === object) {
+            matches = true;
+        }
+    });
+    return matches;
+    
+};
+
 ThreeSceneObject.prototype.update = function(deltaTime) {
 };

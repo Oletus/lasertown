@@ -53,6 +53,48 @@ Building.prototype.handleLaser = function(laserSegmentLoc) {
     }
 };
 
+Building.prototype.ownsSceneObject = function(object) {
+    for (var i = 0; i < this.blocks.length; ++i) {
+        if (this.blocks[i].ownsSceneObject(object)) {
+            return true;
+        }
+    }
+    return false;
+};
+
+/**
+ * @constructor
+ */
+var BuildingCursor = function(options) {
+    var defaults = {
+        level: null,
+        gridX: 0,
+        gridZ: 0
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    
+    this.mesh = this.createMesh();
+    
+    this.initThreeSceneObject({
+        object: this.mesh,
+        scene: options.scene
+    });
+};
+
+BuildingCursor.prototype = new ThreeSceneObject();
+
+BuildingCursor.prototype.update = function(deltaTime) {
+    this.object.position.x = this.level.gridXToWorld(this.gridX);
+    this.object.position.z = this.level.gridZToWorld(this.gridZ);
+    this.object.position.y = 0.2;
+};
+
+BuildingCursor.prototype.createMesh = function() {
+    var geometry = new THREE.BoxGeometry( 1.5, 0.2, 1.5 );
+    var material = new THREE.MeshPhongMaterial( { color: 0xaaccff, emissive: 0x448888 } );
+    return new THREE.Mesh(geometry, material);
+};
+
 /**
  * @constructor
  */
@@ -78,7 +120,7 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.initThreeSceneObject({
         object: this.origin,
         scene: options.scene
-    });    
+    });
     this.addToScene();
     
     this.stationary = true;
@@ -87,7 +129,6 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
 
 BuildingBlock.prototype.createMesh = function() {
-    // Test geometry
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = BuildingBlock.wallMaterial;
     return new THREE.Mesh(geometry, material);
