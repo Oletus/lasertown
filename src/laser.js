@@ -43,6 +43,12 @@ var Laser = function(options) {
     this.ensureSegmentExists(0);
 };
 
+Laser.Handling = {
+    STOP: 0,
+    CONTINUE: 1,
+    INFINITY: 2
+};
+
 Laser.offsetFromDirection = function(direction) {
     switch (direction) {
         case LaserSegment.Direction.POSITIVE_X:
@@ -79,28 +85,25 @@ Laser.prototype.update = function(deltaTime) {
         x = Math.round(x + offset.x);
         z = Math.round(z + offset.z);
         this.segments[segmentIndex].length += GRID_SPACING;
-        var building = this.level.getBuildingFromGrid(x, z);
-        if (!building) {
+        var handling = this.level.handleLaser(x, z, loc);
+        if (handling instanceof LaserSegmentLocation) {
+            // Make sure that laser doesn't loop
+            if (Laser.inPath(path, handling)) {
+                laserContinues = false;
+            } else {
+                path.push(handling.copy());
+                ++segmentIndex;
+                this.ensureSegmentExists(segmentIndex);
+                this.segments[segmentIndex].loc = handling;
+                loc = this.segments[segmentIndex].loc;
+                this.segments[segmentIndex].length = 0;
+            }
+        } else if (handling === Laser.Handling.STOP) {
+            laserContinues = false;
+            this.segments[segmentIndex].length -= 0.5;  // stop at building wall
+        } else if (handling === Laser.Handling.INFINITY) {
             laserContinues = false;
             this.segments[segmentIndex].length += GRID_SPACING * 10; // go beyond the edge of the level
-        } else {
-            var handling = building.handleLaser(loc);
-            if (handling === null) {
-                laserContinues = false;
-                this.segments[segmentIndex].length -= 0.5;  // stop at building wall
-            } else if (handling instanceof LaserSegmentLocation) {
-                // Make sure that laser doesn't loop
-                if (Laser.inPath(path, handling)) {
-                    laserContinues = false;
-                } else {
-                    path.push(handling.copy());
-                    ++segmentIndex;
-                    this.ensureSegmentExists(segmentIndex);
-                    this.segments[segmentIndex].loc = handling;
-                    loc = this.segments[segmentIndex].loc;
-                    this.segments[segmentIndex].length = 0;
-                }
-            }
         }
     }
     this.pruneSegments(segmentIndex + 1);
@@ -141,10 +144,10 @@ var LaserSegment = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
     
     var geometry = new THREE.BoxGeometry( 0.2, 0.2, 1 );
-    var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xff8888 } );
-    /*material.blending = THREE.AdditiveBlending;
+    var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xff5555 } );
+    material.blending = THREE.AdditiveBlending;
     material.transparent = true;
-    material.opacity = 0.6;*/
+    material.opacity = 0.7;
     this.mesh = new THREE.Mesh(geometry, material);
     
     this.origin = new THREE.Object3D();

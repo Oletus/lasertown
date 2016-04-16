@@ -12,7 +12,7 @@ Building.prototype.initBuilding = function(options) {
     var defaults = {
         gridX: 0,
         gridZ: 0,
-        topY: mathUtil.randomInt(2) + 1,
+        topY: 2,
         height: 3,
         level: null
     };
@@ -46,11 +46,18 @@ Building.prototype.update = function(deltaTime) {
  */
 Building.prototype.handleLaser = function(laserSegmentLoc) {
     if (laserSegmentLoc.y > this.topY) {
-        return true;
+        return Laser.Handling.CONTINUE;
     } else {
-        return null;
+        return Laser.Handling.STOP;
     }
 };
+
+var GoalBuilding = function(options) {
+    this.initBuilding(options);
+    this.stationary = true;
+};
+
+GoalBuilding.prototype = new Building();
 
 /**
  * @constructor

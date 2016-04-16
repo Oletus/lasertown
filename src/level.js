@@ -42,6 +42,20 @@ var Level = function(options) {
         scene: this.scene
     });
     this.objects.push(this.laser);
+    
+    this.goal = new GoalBuilding({
+        level: this,
+        scene: this.scene,
+        gridX: this.width,
+        gridZ: 2
+    });
+    this.objects.push(this.goal);
+    this.state = new StateMachine({stateSet: Level.State, id: Level.State.IN_PROGRESS});
+};
+
+Level.State = {
+    IN_PROGRESS: 0,
+    SUCCESS: 1
 };
 
 Level.prototype.gridXToWorld = function(gridX) {
@@ -74,6 +88,18 @@ Level.prototype.getBuildingFromGrid = function(x, z) {
         return null;
     }
     return this.buildingGrid[x][z];
+};
+
+Level.prototype.handleLaser = function(x, z, loc) {
+    var building = this.getBuildingFromGrid(x, z);
+    if (!building) {
+        if (x === this.goal.gridX && z === this.goal.gridZ) {
+            this.state.change(Level.State.SUCCESS);
+        }
+        return Laser.Handling.INFINITY;
+    } else {
+        return building.handleLaser(loc);
+    }
 };
 
 Level.prototype.moveCamera = function(lookAt) {
