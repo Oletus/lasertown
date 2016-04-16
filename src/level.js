@@ -21,18 +21,22 @@ var Level = function(options) {
     this.setupGridGeometry();
     
     this.objects = [];
+    this.buildingGrid = [];
     for (var x = 0; x < this.width; ++x) {
+        this.buildingGrid.push([]);
         for (var z = 0; z < this.depth; ++z) {
-            this.objects.push(new Building({
+            var building = new BlockBuilding({
                 level: this,
                 scene: this.scene,
                 gridX: x,
                 gridZ: z
-            }));
+            });
+            this.objects.push(building);
+            this.buildingGrid[x].push(building);
         }
     }
     
-    this.laser = new LaserSegment({
+    this.laser = new Laser({
         level: this,
         scene: this.scene
     });
@@ -59,6 +63,16 @@ Level.prototype.update = function(deltaTime) {
 
 Level.prototype.render = function(renderer) {
     renderer.render(this.scene, this.camera);
+};
+
+Level.prototype.getBuildingFromGrid = function(x, z) {
+    if (x < 0 || x >= this.buildingGrid.length) {
+        return null;
+    }
+    if (z < 0 || z >= this.buildingGrid[x].length) {
+        return null;
+    }
+    return this.buildingGrid[x][z];
 };
 
 Level.prototype.moveCamera = function(lookAt) {
