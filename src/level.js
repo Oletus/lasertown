@@ -14,8 +14,8 @@ var Level = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
     
     this.scene = new THREE.Scene();
-    this.interactableScene = new THREE.Object3D();
-    this.scene.add(this.interactableScene);
+    this.interactiveScene = new THREE.Object3D();
+    this.scene.add(this.interactiveScene);
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
     this.moveCamera(new THREE.Vector3((this.width - 1) * GRID_SPACING * 0.5, 0, (this.depth - 1) * GRID_SPACING * 0.5));
     this.raycaster = new THREE.Raycaster();
@@ -35,7 +35,7 @@ var Level = function(options) {
             ];
             building.initBuilding({
                 level: this,
-                scene: this.interactableScene,
+                scene: this.interactiveScene,
                 blocksSpec: blocksSpec,
                 gridX: x,
                 gridZ: z,
@@ -151,7 +151,7 @@ Level.prototype.setupGridGeometry = function() {
             var gridMesh = new THREE.Mesh( this.gridGeometry, material );
             gridMesh.position.x = x * GRID_SPACING;
             gridMesh.position.z = z * GRID_SPACING;
-            this.interactableScene.add(gridMesh);
+            this.interactiveScene.add(gridMesh);
         }
     }
 };
@@ -165,7 +165,7 @@ Level.prototype.setupLights = function() {
 
 Level.prototype.setCursorPosition = function(viewportPos) {
     this.raycaster.setFromCamera(viewportPos, this.camera);
-    var intersects = this.raycaster.intersectObjects(this.interactableScene.children, true);
+    var intersects = this.raycaster.intersectObjects(this.interactiveScene.children, true);
     this.chosenBuilding = null;
     if (intersects.length > 0) {
         var nearest = intersects[0];
