@@ -17,6 +17,8 @@ var Level = function(options) {
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
     this.moveCamera(new THREE.Vector3((this.width - 1) * GRID_SPACING * 0.5, 0, (this.depth - 1) * GRID_SPACING * 0.5));
     
+    this.setupLights();
+    
     this.objects = [];
     for (var x = 0; x < this.width; ++x) {
         for (var z = 0; z < this.depth; ++z) {
@@ -44,4 +46,11 @@ Level.prototype.moveCamera = function(lookAt) {
     this.camera.position.x = lookAt.x + 15;
     this.camera.position.y = lookAt.y + 15;
     this.camera.lookAt(lookAt);
+};
+
+Level.prototype.setupLights = function() {
+    this.scene.add(new THREE.AmbientLight(0x222222));
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0.5, 1, -1).normalize();
+    this.scene.add(directionalLight);
 };

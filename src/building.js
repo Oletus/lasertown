@@ -12,7 +12,7 @@ var Building = function(options) {
 
     // Test geometry
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false } );
+    var material = new THREE.MeshPhongMaterial( { color: 0xff8888, specular: 0xffffff } );
     var mesh = new THREE.Mesh( geometry, material );
     this.initThreeSceneObject({
         mesh: mesh,
