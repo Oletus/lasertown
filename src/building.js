@@ -22,6 +22,8 @@ Building.prototype.initBuilding = function(options) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
+    // Always add an extra stop block to the bottom of the building
+    this.blocks.push(this.constructBlockFromSpec({blockConstructor: StopBlock}));
     this.stationary = false;
 };
 
@@ -37,7 +39,7 @@ Building.prototype.upPress = function() {
     if (this.stationary) {
         return;
     }
-    if (this.topYTarget < this.blocks.length) {
+    if (this.topYTarget < this.blocks.length - 1) {
         ++this.topYTarget;
     }
 };
