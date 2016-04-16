@@ -70,13 +70,10 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
-    // Test geometry
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshPhongMaterial( { color: 0xff8888, specular: 0xffffff } );
-    this.baseMesh = new THREE.Mesh( geometry, material );
+    this.mesh = this.createMesh();
 
     this.origin = new THREE.Object3D();
-    this.origin.add(this.baseMesh);
+    this.origin.add(this.mesh);
 
     this.initThreeSceneObject({
         object: this.origin,
@@ -85,6 +82,13 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.addToScene();
     
     this.stationary = true;
+};
+
+BuildingBlock.prototype.createMesh = function() {
+    // Test geometry
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var material = new THREE.MeshPhongMaterial( { color: 0xff8888, specular: 0xffffff } );
+    return new THREE.Mesh(geometry, material);
 };
 
 BuildingBlock.prototype.update = function(deltaTime) {
@@ -141,14 +145,26 @@ GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
  * @constructor
  */
 var MirrorBlock = function(options) {
-    this.initBuildingBlock(options);
     var defaults = {
         mirrorDirection: true // true means positive x gets mirrored to positive z.
     };
     objectUtil.initWithDefaults(this, defaults, options);
+    this.initBuildingBlock(options);
 };
 
 MirrorBlock.prototype = new BuildingBlock();
+
+MirrorBlock.prototype.createMesh = function() {
+    var geometry = new THREE.BoxGeometry( 1, 1, 0.15 );
+    var material = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
+    material.transparent = true;
+    material.opacity = 0.7;
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.y = Math.PI * (0.25 + (this.mirrorDirection ? 0.5 : 0));
+    var parent = new THREE.Object3D();
+    parent.add(mesh);
+    return parent;
+};
 
 MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
     var newLoc = new LaserSegmentLocation({
