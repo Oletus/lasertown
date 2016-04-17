@@ -273,9 +273,11 @@ Level.prototype.setCursorPosition = function(viewportPos) {
 Level.prototype.mouseDown = function() {
     this.mouseDownCursorPosition = this.lastCursorPosition;
     if (this.chosenBuilding !== null) {
-        this.mouseDownBuilding = this.chosenBuilding;
-        this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
-        this.mouseDownMoveCamera = false;
+        if (!this.chosenBuilding.stationary) {
+            this.mouseDownBuilding = this.chosenBuilding;
+            this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
+            this.mouseDownMoveCamera = false;
+        }
     } else {
         this.mouseDownMoveCamera = true;
     }
