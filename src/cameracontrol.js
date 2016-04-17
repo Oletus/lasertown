@@ -17,8 +17,6 @@ var OrbitCameraControl = function(options) {
         minOrbitAngle: -Infinity,
         maxOrbitAngle: Infinity,
         lookAt: new THREE.Vector3(0, 0, 0)
-        /*minPolarAngle: 0, // distance from pole
-        maxPolarAngle: Math.PI * 0.5*/
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.updateCamera();

@@ -234,10 +234,12 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
-    this.mesh = this.createMesh();
+    this.modelParent = new THREE.Object3D();
+    this.object = this.createObject3D();
+    this.updateModel();
 
     this.origin = new THREE.Object3D();
-    this.origin.add(this.mesh);
+    this.origin.add(this.object);
 
     this.initThreeSceneObject({
         object: this.origin,
@@ -246,28 +248,6 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.addToScene();
     
     this.stationary = true;
-};
-
-BuildingBlock.prototype.setStationary = function(stationary) {
-    this.object.traverse(function(obj) {
-        if (obj instanceof THREE.Mesh) {
-            if (stationary) {
-                if (obj.material === BuildingBlock.wallMaterial) {
-                    obj.material = BuildingBlock.stationaryWallMaterial;
-                }
-                if (obj.material === BuildingBlock.wallMaterial2) {
-                    obj.material = BuildingBlock.stationaryWallMaterial2;
-                }
-            } else {
-                if (obj.material === BuildingBlock.stationaryWallMaterial) {
-                    obj.material = BuildingBlock.wallMaterial;
-                }
-                if (obj.material === BuildingBlock.stationaryWallMaterial2) {
-                    obj.material = BuildingBlock.wallMaterial2;
-                }
-            }
-        }
-    });
 };
 
 BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xff88aa, specular: 0x222222 } );
@@ -280,15 +260,56 @@ BuildingBlock.mirrorMaterial.transparent = true;
 BuildingBlock.mirrorMaterial.opacity = 0.7;
 
 BuildingBlock.loadModels = function() {
-    utilTHREE.loadJSONModel('lazertown_brick', function(object) {
+    /*utilTHREE.loadMTLOBJ('stop.obj', 'stop.mtl', function(object) {
         StopBlock.model = object;
+    });
+    utilTHREE.loadMTLOBJ('hole.obj', 'hole.mtl', function(object) {
+        HoleBlock.model = object;
+    });
+    utilTHREE.loadMTLOBJ('mirror.obj', 'mirror.mtl', function(object) {
+        MirrorBlock.model = object;
+    });
+    utilTHREE.loadMTLOBJ('periscope.obj', 'periscope.mtl', function(object) {
+        PeriscopeBlock.model = object;
+    });*/
+    utilTHREE.loadMTLOBJ('stop_stationary.obj', 'stop_stationary.mtl', function(object) {
+        StopBlock.stationaryModel = object;
+    });
+    utilTHREE.loadMTLOBJ('hole_stationary.obj', 'hole_stationary.mtl', function(object) {
+        HoleBlock.stationaryModel = object;
+    });
+    utilTHREE.loadMTLOBJ('mirror_stationary.obj', 'mirror_stationary.mtl', function(object) {
+        MirrorBlock.stationaryModel = object;
+    });
+    utilTHREE.loadMTLOBJ('periscope_stationary.obj', 'periscope_stationary.mtl', function(object) {
+        PeriscopeBlock.stationaryModel = object;
     });
 };
 
-BuildingBlock.prototype.createMesh = function() {
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = BuildingBlock.wallMaterial;
-    return new THREE.Mesh(geometry, material);
+BuildingBlock.prototype.setStationary = function(stationary) {
+    this.stationary = stationary;
+    this.updateModel();
+};
+
+BuildingBlock.prototype.updateModel = function() {
+    this.modelParent.children = [];
+    this.modelParent.add(this.getModel());
+};
+
+BuildingBlock.prototype.getModel = function() {
+    return this.getStationaryModel().clone();
+    if (this.stationary) {
+        return this.getMovableModel().clone();
+    } else {
+        return this.getStationaryModel().clone();
+    }
+};
+
+/**
+ * Create an object aligned to origin that has the modelParent in the tree.
+ */
+BuildingBlock.prototype.createObject3D = function() {
+    return this.modelParent;
 };
 
 BuildingBlock.prototype.update = function(deltaTime) {
@@ -353,25 +374,8 @@ StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
     return Laser.Handling.STOP;
 };
 
-StopBlock.prototype.createMesh = function() {
-    var parent = new THREE.Object3D();
-
-    /*var geometry = new THREE.BoxGeometry( 0.95, 0.8, 0.95 );
-    var material = BuildingBlock.wallMaterial;
-    var blockMesh = new THREE.Mesh(geometry, material);
-    blockMesh.position.y = -0.1;
-    
-    var decorGeometry = new THREE.BoxGeometry( 1, 0.2, 1 );
-    var material2 = BuildingBlock.wallMaterial2;
-    var decorMesh = new THREE.Mesh(decorGeometry, material2);
-    decorMesh.position.y = 0.4;
-    
-    parent.add(blockMesh);
-    parent.add(decorMesh);*/
-    
-    parent.add(StopBlock.model.clone());
-
-    return parent;
+StopBlock.prototype.getStationaryModel = function() {
+    return StopBlock.stationaryModel;
 };
 
 /**
@@ -388,9 +392,8 @@ GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
     return Laser.Handling.INFINITY;
 };
 
-GoalBlock.prototype.createMesh = function() {
+GoalBlock.prototype.getModel = function() {
     var shape = utilTHREE.createUShape(1.0, 0.1, 0.3);
-
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.05), new THREE.Vector3(0, 0, 0.05));
     var extrudeSettings = {
         steps: 1,
@@ -401,8 +404,12 @@ GoalBlock.prototype.createMesh = function() {
     var material = BuildingBlock.goalMaterial;
     var mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.z = -Math.PI * 0.5;
+    return mesh;
+};
+
+GoalBlock.prototype.createObject3D = function() {
     var parent = new THREE.Object3D();
-    parent.add(mesh);
+    parent.add(this.modelParent);
     parent.rotation.y = Math.PI * (this.goalDirection ? 0.5 : 0);
     return parent;
 };
@@ -421,7 +428,14 @@ GoalPostBlock.prototype.handleLaser = function(laserSegmentLoc) {
     return Laser.Handling.INFINITY;
 };
 
-GoalPostBlock.prototype.createMesh = function() {
+GoalPostBlock.prototype.createObject3D = function() {
+    var parent = new THREE.Object3D();
+    parent.add(this.modelParent);
+    parent.rotation.y = Math.PI * (this.goalDirection ? 0.5 : 0);
+    return parent;
+};
+
+GoalPostBlock.prototype.getModel = function() {
     var geometry = new THREE.BoxGeometry(0.1, 1, 0.1);
     var material = BuildingBlock.goalMaterial;
     var mesh1 = new THREE.Mesh(geometry, material);
@@ -431,7 +445,6 @@ GoalPostBlock.prototype.createMesh = function() {
     parent.add(mesh2);
     mesh1.position.x = -0.45;
     mesh2.position.x = 0.45;
-    parent.rotation.y = Math.PI * (this.goalDirection ? 0.5 : 0);
     return parent;
 };
 
@@ -470,26 +483,19 @@ HoleBlock.prototype.handleLaser = function(laserSegmentLoc) {
     }
 };
 
-HoleBlock.prototype.createMesh = function() {
-    var shape = utilTHREE.createSquareWithHole(1.0, 0.6);
-
-    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.3), new THREE.Vector3(0, 0, 0.3));
-    var extrudeSettings = {
-        steps: 1,
-        bevelEnabled: false,
-        extrudePath: line
-    };
-    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    var material = BuildingBlock.wallMaterial;
-    var mesh = new THREE.Mesh(geometry, material);
+HoleBlock.prototype.createObject3D = function() {
     var parent = new THREE.Object3D();
-    parent.add(mesh);
+    parent.add(this.modelParent);
     parent.rotation.y = Math.PI * (this.holeDirection ? 0.5 : 0);
     return parent;
 };
 
 HoleBlock.prototype.specProperties = function() {
     return ['holeDirection'];
+};
+
+HoleBlock.prototype.getStationaryModel = function() {
+    return HoleBlock.stationaryModel;
 };
 
 
@@ -506,12 +512,10 @@ var MirrorBlock = function(options) {
 
 MirrorBlock.prototype = new BuildingBlock();
 
-MirrorBlock.prototype.createMesh = function() {
-    var geometry = new THREE.BoxGeometry( 1, 1, 0.15 );
-    var mesh = new THREE.Mesh(geometry, BuildingBlock.mirrorMaterial);
-    mesh.rotation.y = Math.PI * (0.25 + (this.mirrorDirection ? 0.5 : 0));
+MirrorBlock.prototype.createObject3D = function() {
     var parent = new THREE.Object3D();
-    parent.add(mesh);
+    parent.add(this.modelParent);
+    parent.rotation.y = Math.PI * (this.mirrorDirection ? 0.5 : 0);
     return parent;
 };
 
@@ -552,6 +556,10 @@ MirrorBlock.prototype.specProperties = function() {
     return ['mirrorDirection'];
 };
 
+MirrorBlock.prototype.getStationaryModel = function() {
+    return MirrorBlock.stationaryModel;
+};
+
 
 /**
  * @constructor
@@ -568,52 +576,17 @@ var PeriscopeBlock = function(options) {
 
 PeriscopeBlock.prototype = new BuildingBlock();
 
-PeriscopeBlock.prototype.createMesh = function() {
-    var meshParent = new THREE.Object3D();
-    var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.15 );
-    var mesh = new THREE.Mesh(geometry, BuildingBlock.mirrorMaterial);
-    mesh.rotation.x = Math.PI * 0.25;
-    meshParent.add(mesh);
-
-    if (this.isUpperBlock) {
-        mesh.rotation.x = -mesh.rotation.x;
-    }
-    var offset = Laser.offsetFromDirection(this.periscopeDirection);
-    meshParent.rotation.y = Math.atan2(-offset.x, -offset.z);
-    
-    var fs = 0.5;
-    var shape = new THREE.Shape();
-    shape.moveTo(-fs, -fs);
-    shape.lineTo(-fs,  fs);
-    if (this.isUpperBlock) {
-        shape.lineTo( fs, fs);
-        shape.lineTo( fs * 0.3, fs * 0.3);
-        shape.lineTo( fs * 0.3, -fs);
-    } else {
-        shape.lineTo( fs * 0.3, fs);
-        shape.lineTo( fs * 0.3, -fs * 0.3);
-        shape.lineTo( fs, -fs);
-    }
-    var line = new THREE.LineCurve3(new THREE.Vector3(-0.1, 0, 0), new THREE.Vector3(0.1, 0, 0));
-    var extrudeSettings = {
-        steps: 1,
-        bevelEnabled: false,
-        extrudePath: line
-    };
-    var edgeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    var edgeMesh1 = new THREE.Mesh(edgeGeometry, BuildingBlock.wallMaterial);
-    edgeMesh1.position.x = -0.4;
-    var edgeMesh2 = new THREE.Mesh(edgeGeometry, BuildingBlock.wallMaterial);
-    edgeMesh2.position.x = 0.4;
-    meshParent.add(edgeMesh1);
-    meshParent.add(edgeMesh2);
-    var backFaceGeometry = new THREE.BoxGeometry(1, 1, 0.2);
-    var backFaceMesh = new THREE.Mesh(backFaceGeometry, BuildingBlock.wallMaterial);
-    backFaceMesh.position.z = 0.4;
-    meshParent.add(backFaceMesh);
+PeriscopeBlock.prototype.createObject3D = function() {
     
     var parent = new THREE.Object3D();
-    parent.add(meshParent);
+
+    var flipParent = new THREE.Object3D();
+    flipParent.rotation.z = (this.isUpperBlock ? 0 : Math.PI);
+    flipParent.add(this.modelParent);
+    parent.add(flipParent);
+    
+    var offset = Laser.offsetFromDirection(this.periscopeDirection);
+    parent.rotation.y = Math.atan2(offset.x, offset.z);
     return parent;
 };
 
@@ -659,6 +632,10 @@ PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
 
 PeriscopeBlock.prototype.specProperties = function() {
     return ['periscopeDirection', 'isUpperBlock'];
+};
+
+PeriscopeBlock.prototype.getStationaryModel = function() {
+    return PeriscopeBlock.stationaryModel;
 };
 
 BuildingBlock.loadModels();
