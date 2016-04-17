@@ -250,14 +250,7 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     this.stationary = true;
 };
 
-BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xff88aa, specular: 0x222222 } );
-BuildingBlock.wallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xffbbdd, specular: 0x222222 } );
-BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0x222222 } );
-BuildingBlock.stationaryWallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xaaaaaa, specular: 0x222222 } );
 BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x888888 } );
-BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
-BuildingBlock.mirrorMaterial.transparent = true;
-BuildingBlock.mirrorMaterial.opacity = 0.7;
 
 BuildingBlock.loadModels = function() {
     /*utilTHREE.loadMTLOBJ('stop.obj', 'stop.mtl', function(object) {
@@ -589,26 +582,6 @@ PeriscopeBlock.prototype.createObject3D = function() {
     parent.rotation.y = Math.atan2(offset.x, offset.z);
     return parent;
 };
-
-/*PeriscopeBlock.prototype.getPair = function() {
-    var blocks = this.building.blocks;
-    var i = blocks.indexOf(this);
-    var pair = null;
-    while (pair === null) {
-        if (this.isUpperBlock) {
-            ++i;
-        } else {
-            --i;
-        }
-        if (i < 0 || i >= blocks.length) {
-            return null;
-        }
-        if (blocks[i] instanceof PeriscopeBlock) {
-            return blocks[i];
-        }
-    }
-    return pair;
-};*/
 
 PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
     if (this.periscopeDirection === Laser.oppositeDirection(laserSegmentLoc.direction)) {
