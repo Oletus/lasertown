@@ -222,11 +222,11 @@ Level.prototype.setupGridGeometry = function() {
 
 Level.prototype.setupLights = function() {
     this.scene.add(new THREE.AmbientLight(0x222222));
-    var mainLight = new THREE.DirectionalLight(0x7799aa, 1);
+    var mainLight = new THREE.DirectionalLight(0xaaa588, 1);
     mainLight.position.set(0.5, 1, -1).normalize();
     this.scene.add(mainLight);
     
-    var spotLight = new THREE.SpotLight(0x555566);
+    var spotLight = new THREE.SpotLight(0x665555);
     spotLight.position.set( 125, 250, -250 );
     var spotTarget = this.getLookAtCenter();
     
@@ -249,7 +249,7 @@ Level.prototype.setupLights = function() {
 
     this.scene.add( spotLight );
     
-    var fillLight = new THREE.DirectionalLight(0x662244, 1);
+    var fillLight = new THREE.DirectionalLight(0x333355, 1);
     fillLight.position.set(-1, 1, 1).normalize();
     this.scene.add(fillLight);
 };
