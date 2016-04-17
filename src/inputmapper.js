@@ -148,7 +148,7 @@ InputMapper.prototype.addListener = function(gamepadButton, keyboardButtons, dow
                 that.keysDown[keyboardButtons[kbIndex]] = false;
                 that.downCallbacksForKey[keyboardButtons[kbIndex]] = [];
                 that.upCallbacksForKey[keyboardButtons[kbIndex]] = [];
-                var keyDownCallback = function() {
+                var keyDownCallback = function(e) {
                     var player = that.getPlayerIndex(InputMapper.KEYBOARD, kbIndex);
                     // Down events get generated multiple times while a key is down. Work around this.
                     if (!that.keysDown[keyboardButtons[kbIndex]]) {
@@ -158,6 +158,7 @@ InputMapper.prototype.addListener = function(gamepadButton, keyboardButtons, dow
                             callbacksToCall[i].call(that.callbackObj, player);
                         }
                     }
+                    e.preventDefault();
                 };
                 var keyUpCallback = function() {
                     var player = that.getPlayerIndex(InputMapper.KEYBOARD, kbIndex);
@@ -166,6 +167,7 @@ InputMapper.prototype.addListener = function(gamepadButton, keyboardButtons, dow
                     for (var i = 0; i < callbacksToCall.length; ++i) {
                         callbacksToCall[i].call(that.callbackObj, player);
                     }
+                    e.preventDefault();
                 };
                 window.Mousetrap.bindGlobal(keyboardButtons[kbIndex], keyDownCallback, 'keydown');
                 window.Mousetrap.bindGlobal(keyboardButtons[kbIndex], keyUpCallback, 'keyup');
