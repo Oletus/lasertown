@@ -424,6 +424,9 @@ BuildingBlock.loadModels = function() {
     utilTHREE.loadJSONModel('roof_stationary', function(object) {
         BuildingRoof.stationaryModel = object;
     });
+    utilTHREE.loadJSONModel('laser_cannon', function(object) {
+        LaserCannon.model = object;
+    });
 };
 
 BuildingBlock.prototype.setStationary = function(stationary) {

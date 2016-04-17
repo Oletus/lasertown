@@ -41,6 +41,7 @@ var Laser = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
     this.segments = [];
     this.ensureSegmentExists(0);
+    this.laserCannon = new LaserCannon({laser: this, scene: this.scene});
 };
 
 Laser.Handling = {
@@ -156,6 +157,7 @@ Laser.prototype.update = function(deltaTime) {
     for (var i = 0; i < this.segments.length; ++i) {
         this.segments[i].update(deltaTime);
     }
+    this.laserCannon.update(deltaTime);
 };
 
 Laser.prototype.ensureSegmentExists = function(i) {
@@ -175,6 +177,40 @@ Laser.prototype.pruneSegments = function(startFrom) {
         }
         this.segments.splice(startFrom);
     }
+};
+
+/**
+ * @constructor
+ */
+var LaserCannon = function(options) {
+    var defaults = {
+        laser: null
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+
+    this.mesh = LaserCannon.model.clone();
+    this.mesh.position.x = -0.75;
+    this.mesh.position.y = -0.8;
+    
+    this.origin = new THREE.Object3D();
+    this.origin.add(this.mesh);
+    
+    this.initThreeSceneObject({
+        object: this.origin,
+        scene: options.scene
+    });
+    
+    this.addToScene();
+};
+
+LaserCannon.prototype = new ThreeSceneObject();
+
+LaserCannon.model = null;
+
+LaserCannon.prototype.update = function(deltaTime) {
+    this.origin.position.x = this.laser.segments[0].origin.position.x;
+    this.origin.position.y = this.laser.segments[0].origin.position.y;
+    this.origin.position.z = this.laser.segments[0].origin.position.z;
 };
 
 /**
