@@ -142,7 +142,7 @@ Game.prototype.initLevel = function() {
         cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
     };
     //this.level = new Level(options);
-    this.level = Level.fromSpec(options, levelData.empty);
+    this.level = Level.fromSpec(options, levelData['1']);
 };
 
 Game.prototype.render = function() {
