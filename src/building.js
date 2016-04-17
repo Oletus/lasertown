@@ -13,25 +13,19 @@ Building.prototype.initBuilding = function(options) {
         gridX: 0,
         gridZ: 0,
         blocksSpec: [], // Listed from top downwards
-        stationary: false
+        stationary: false,
+        topY: undefined
     };
     objectUtil.initWithDefaults(this, defaults, options);
-    this.topY = this.blocksSpec.length - 1;
+    if (this.topY === undefined) {
+        this.topY = this.blocksSpec.length - 1;
+    }
     this.topYTarget = this.topY;
     this.blocks = [];
     for (var i = 0; i < this.blocksSpec.length; ++i) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
-};
-
-Building.fromSpec = function(options, spec) {
-    var parsedSpec = parseSpec(spec);
-    options.blocksSpec = parsedSpec.blocksSpec;
-    options.stationary = parsedSpec.stationary;
-    var building = new Building();
-    building.initBuilding(options);
-    return building;
 };
 
 Building.prototype.update = function(deltaTime) {
@@ -147,6 +141,16 @@ Building.prototype.setStationary = function(stationary) {
     }
 };
 
+Building.fromSpec = function(options, spec) {
+    var parsedSpec = parseSpec(spec);
+    options.blocksSpec = parsedSpec.blocksSpec;
+    options.stationary = parsedSpec.stationary;
+    options.topY = parsedSpec.topY;
+    var building = new Building();
+    building.initBuilding(options);
+    return building;
+};
+
 Building.prototype.getSpec = function() {
     var spec = '{blocksSpec: ['
     for (var i = 0; i < this.blocks.length; ++i) {
@@ -155,7 +159,10 @@ Building.prototype.getSpec = function() {
             spec += ', ';
         }
     }
-    spec += '], stationary: ' + this.stationary + '}'
+    spec += ']';
+    spec += ', stationary: ' + this.stationary;
+    spec += ', topY: ' + this.topY;
+    spec += '}';
     return spec;
 };
 
