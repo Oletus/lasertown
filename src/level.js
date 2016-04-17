@@ -18,7 +18,6 @@ var Level = function(options) {
     this.interactiveScene = new THREE.Object3D();
     this.scene.add(this.interactiveScene);
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
-    this.moveCamera(new THREE.Vector3((this.width - 1) * GRID_SPACING * 0.5, 0, (this.depth - 1) * GRID_SPACING * 0.5));
     this.raycaster = new THREE.Raycaster();
     
     this.setupLights();
@@ -75,6 +74,14 @@ var Level = function(options) {
     });
     this.objects.push(this.buildingCursor);
     this.updateChosenBuilding();
+    
+    this.cameraControl = new OrbitCameraControl({
+        camera: this.camera,
+        lookAt: this.getLookAtCenter(),
+        orbitAngle: Math.PI * 0.25
+    });
+    this.mouseDownBuilding = null;
+    this.mouseDownMoveCamera = false;
     
     if (DEV_MODE) {
         this.editor = new LevelEditor(this, this.scene);
@@ -160,11 +167,12 @@ Level.prototype.handleLaser = function(x, z, loc) {
     }
 };
 
-Level.prototype.moveCamera = function(lookAt) {
-    this.camera.position.z = lookAt.z + 15;
-    this.camera.position.x = lookAt.x + 15;
-    this.camera.position.y = lookAt.y + 15;
-    this.camera.lookAt(lookAt);
+Level.prototype.getLookAtCenter = function() {
+    return new THREE.Vector3(
+        (this.buildingGrid.length - 1) * GRID_SPACING * 0.5,
+        0,
+        (this.buildingGrid[0].length - 1) * GRID_SPACING * 0.5
+    );
 };
 
 Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x777777, specular: 0x222222 } );
@@ -227,7 +235,10 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             }
         }
     }
-    if (this.mouseDownBuilding) {
+    if (this.mouseDownMoveCamera) {
+        var diff = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
+        this.cameraControl.zoom(diff);
+    } else if (this.mouseDownBuilding) {
         var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
         if (Game.parameters.get('roundedMovement')) {
             steps = Math.round(steps);
@@ -237,9 +248,13 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         if (!Game.parameters.get('roundedMovement')) {
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
         }
-    } else if (mouseOverBuilding !== this.chosenBuilding && mouseOverBuilding !== null) {
-        if (!mouseOverBuilding.stationary || this.editor) {
-            this.chosenBuilding = mouseOverBuilding;
+    } else if (mouseOverBuilding !== this.chosenBuilding) {
+        if (mouseOverBuilding !== null) {
+            if (!mouseOverBuilding.stationary || this.editor) {
+                this.chosenBuilding = mouseOverBuilding;
+            } else {
+                this.chosenBuilding = null;
+            }
         } else {
             this.chosenBuilding = null;
         }
@@ -249,10 +264,13 @@ Level.prototype.setCursorPosition = function(viewportPos) {
 };
 
 Level.prototype.mouseDown = function() {
+    this.mouseDownCursorPosition = this.lastCursorPosition;
     if (this.chosenBuilding !== null) {
         this.mouseDownBuilding = this.chosenBuilding;
-        this.mouseDownCursorPosition = this.lastCursorPosition;
         this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
+        this.mouseDownMoveCamera = false;
+    } else {
+        this.mouseDownMoveCamera = true;
     }
 };
 
@@ -262,6 +280,7 @@ Level.prototype.mouseUp = function() {
         this.chosenBuilding.clampY();
     }
     this.mouseDownBuilding = null;
+    this.mouseDownMoveCamera = false;
 };
 
 Level.prototype.updateChosenBuilding = function() {
