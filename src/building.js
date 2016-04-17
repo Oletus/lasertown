@@ -26,6 +26,9 @@ Building.prototype.initBuilding = function(options) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
+    for (var i = 0; i < this.blocks.length; ++i) {
+        this.blocks[i].updateModel();
+    }
     this.roof = new BuildingRoof({building: this, scene: this.scene, level: this.level});
     this.roof.setStationary(this.stationary);
     this.updateRoof();
@@ -93,7 +96,8 @@ Building.prototype.constructBlockFromSpec = function(spec) {
     var options = {
         level: this.level,
         building: this,
-        scene: this.scene
+        scene: this.scene,
+        stationary: this.stationary
     };
     for (var key in spec) {
         if (spec.hasOwnProperty(key)) {
@@ -101,9 +105,6 @@ Building.prototype.constructBlockFromSpec = function(spec) {
         }
     }
     var block = new spec.blockConstructor(options);
-    if (this.stationary) {
-        block.setStationary(this.stationary);
-    }
     return block;
 };
 
@@ -371,13 +372,13 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
     var defaults = {
         topY: 2,
         building: null,
-        level: null
+        level: null,
+        stationary: true
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
     this.modelParent = new THREE.Object3D();
     this.object = this.createObject3D();
-    this.updateModel();
 
     this.origin = new THREE.Object3D();
     this.origin.add(this.object);
@@ -387,8 +388,6 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
         scene: options.scene
     });
     this.addToScene();
-    
-    this.stationary = true;
 };
 
 BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x888888 } );
@@ -405,6 +404,9 @@ BuildingBlock.loadModels = function() {
     });
     utilTHREE.loadJSONModel('periscope', function(object) {
         PeriscopeBlock.model = object;
+    });
+    utilTHREE.loadJSONModel('periscope2', function(object) {
+        PeriscopeBlock.adjacentModel = object;
     });
     utilTHREE.loadJSONModel('roof', function(object) {
         BuildingRoof.model = object;
@@ -430,8 +432,10 @@ BuildingBlock.loadModels = function() {
 };
 
 BuildingBlock.prototype.setStationary = function(stationary) {
-    this.stationary = stationary;
-    this.updateModel();
+    if (this.stationary !== stationary) {
+        this.stationary = stationary;
+        this.updateModel();
+    }
 };
 
 BuildingBlock.prototype.updateModel = function() {
@@ -763,6 +767,25 @@ PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
         });
     } else {
         return Laser.Handling.STOP;
+    }
+};
+
+PeriscopeBlock.prototype.getModel = function() {
+    if (this.stationary) {
+        return this.getStationaryModel().clone();
+    } else {
+        var ownIndex = this.building.blocks.indexOf(this);
+        if (ownIndex >= 0) {
+            var nextToIndex = this.isUpperBlock ? ownIndex + 1 : ownIndex - 1;
+            if (nextToIndex >= 0 && nextToIndex < this.building.blocks.length) {
+                var nextTo = this.building.blocks[nextToIndex];
+                if ((nextTo instanceof PeriscopeBlock && nextTo.periscopeDirection === this.periscopeDirection) || 
+                    (!(nextTo instanceof MirrorBlock) && !(nextTo instanceof PeriscopeBlock))) {
+                    return PeriscopeBlock.adjacentModel.clone();
+                }
+            }
+        }
+        return this.getMovableModel().clone();
     }
 };
 
