@@ -12,19 +12,25 @@ Building.prototype.initBuilding = function(options) {
         scene: null,
         gridX: 0,
         gridZ: 0,
-        topY: 2,
         blocksSpec: [] // Listed from top downwards
     };
     objectUtil.initWithDefaults(this, defaults, options);
+    this.topY = this.blocksSpec.length - 1;
     this.topYTarget = this.topY;
     this.blocks = [];
     for (var i = 0; i < this.blocksSpec.length; ++i) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
-    // Always add an extra stop block to the bottom of the building
-    this.blocks.push(this.constructBlockFromSpec({blockConstructor: StopBlock}));
     this.stationary = false;
+};
+
+Building.fromSpec = function(options, spec) {
+    var parsedSpec = parseSpec(spec);
+    options.blocksSpec = parsedSpec.blocksSpec;
+    var building = new Building();
+    building.initBuilding(options);
+    return building;
 };
 
 Building.prototype.update = function(deltaTime) {
@@ -140,6 +146,16 @@ Building.prototype.setStationary = function(stationary) {
     }
 };
 
+Building.prototype.getSpec = function() {
+    var spec = '{blocksSpec: ['
+    for (var i = 0; i < this.blocks.length; ++i) {
+        spec += this.blocks[i].getSpec();
+    }
+    spec += ']}'
+    return spec;
+};
+
+
 /**
  * @constructor
  */
@@ -249,6 +265,20 @@ BuildingBlock.prototype.update = function(deltaTime) {
     this.object.position.y = this.topY - 0.5;
 };
 
+BuildingBlock.prototype.getSpec = function() {
+    var spec = "{blockConstructor: " + this.constructor.name;
+    var specProps = this.specProperties();
+    for (var i = 0; i < specProps.length; ++i) {
+        spec += ', ' + specProps[i] + ': ' + this[specProps[i]];
+    }
+    spec += "}";
+    return spec;
+};
+
+BuildingBlock.prototype.specProperties = function() {
+    return [];
+};
+
 
 /**
  * @constructor
@@ -341,6 +371,10 @@ HoleBlock.prototype.createMesh = function() {
     return parent;
 };
 
+HoleBlock.prototype.specProperties = function() {
+    return ['holeDirection'];
+};
+
 
 /**
  * @constructor
@@ -393,6 +427,11 @@ MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
     }
     return newLoc;
 };
+
+MirrorBlock.prototype.specProperties = function() {
+    return ['mirrorDirection'];
+};
+
 
 /**
  * @constructor
@@ -492,4 +531,8 @@ PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
     } else {
         return Laser.Handling.STOP;
     }
+};
+
+PeriscopeBlock.prototype.specProperties = function() {
+    return ['periscopeDirection', 'isUpperBlock'];
 };

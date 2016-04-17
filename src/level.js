@@ -9,7 +9,8 @@ var Level = function(options) {
     var defaults = {
         width: 5,
         depth: 5,
-        cameraAspect: 16 / 9
+        cameraAspect: 16 / 9,
+        buildingGridSpec: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
     
@@ -25,22 +26,28 @@ var Level = function(options) {
     
     this.objects = [];
     this.buildingGrid = [];
-    for (var x = 0; x < this.width; ++x) {
+    
+    if (this.buildingGridSpec === null) {
+        var buildingSpec = "{blocksSpec: [{blockConstructor: StopBlock}, {blockConstructor: StopBlock}]}";
+        this.buildingGridSpec = [];
+        for (var x = 0; x < this.width; ++x) {
+            this.buildingGridSpec.push([]);
+            for (var z = 0; z < this.depth; ++z) {
+                this.buildingGridSpec[x].push(buildingSpec);
+            }
+        }
+    }
+    for (var x = 0; x < this.buildingGridSpec.length; ++x) {
+        var rowSpec = this.buildingGridSpec[x];
         this.buildingGrid.push([]);
-        for (var z = 0; z < this.depth; ++z) {
-            var building = new Building();
-            var blocksSpec = [
-                {blockConstructor: HoleBlock, holeDirection: true},
-                {blockConstructor: StopBlock}
-            ];
-            building.initBuilding({
+        for (var z = 0; z < rowSpec.length; ++z) {
+            var building = Building.fromSpec({
                 level: this,
                 scene: this.interactiveScene,
-                blocksSpec: blocksSpec,
                 gridX: x,
-                gridZ: z,
-                mirrorDirection: Math.random() < 0.5
-            });
+                gridZ: z                
+            }, rowSpec[z]);
+
             this.objects.push(building);
             this.buildingGrid[x].push(building);
         }
@@ -73,6 +80,10 @@ var Level = function(options) {
         this.editor = new LevelEditor(this, this.scene);
     }
 };
+
+/*Level.fromSpec = function() {
+    parseSpec('');
+};*/
 
 Level.State = {
     IN_PROGRESS: 0,
