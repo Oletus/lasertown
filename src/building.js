@@ -253,28 +253,28 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x888888 } );
 
 BuildingBlock.loadModels = function() {
-    /*utilTHREE.loadMTLOBJ('stop.obj', 'stop.mtl', function(object) {
+    utilTHREE.loadJSONModel('stop', function(object) {
         StopBlock.model = object;
     });
-    utilTHREE.loadMTLOBJ('hole.obj', 'hole.mtl', function(object) {
+    utilTHREE.loadJSONModel('hole', function(object) {
         HoleBlock.model = object;
     });
-    utilTHREE.loadMTLOBJ('mirror.obj', 'mirror.mtl', function(object) {
+    utilTHREE.loadJSONModel('mirror', function(object) {
         MirrorBlock.model = object;
     });
-    utilTHREE.loadMTLOBJ('periscope.obj', 'periscope.mtl', function(object) {
+    utilTHREE.loadJSONModel('periscope', function(object) {
         PeriscopeBlock.model = object;
-    });*/
-    utilTHREE.loadMTLOBJ('stop_stationary.obj', 'stop_stationary.mtl', function(object) {
+    });
+    utilTHREE.loadJSONModel('stop_stationary', function(object) {
         StopBlock.stationaryModel = object;
     });
-    utilTHREE.loadMTLOBJ('hole_stationary.obj', 'hole_stationary.mtl', function(object) {
+    utilTHREE.loadJSONModel('hole_stationary', function(object) {
         HoleBlock.stationaryModel = object;
     });
-    utilTHREE.loadMTLOBJ('mirror_stationary.obj', 'mirror_stationary.mtl', function(object) {
+    utilTHREE.loadJSONModel('mirror_stationary', function(object) {
         MirrorBlock.stationaryModel = object;
     });
-    utilTHREE.loadMTLOBJ('periscope_stationary.obj', 'periscope_stationary.mtl', function(object) {
+    utilTHREE.loadJSONModel('periscope_stationary', function(object) {
         PeriscopeBlock.stationaryModel = object;
     });
 };
@@ -290,7 +290,6 @@ BuildingBlock.prototype.updateModel = function() {
 };
 
 BuildingBlock.prototype.getModel = function() {
-    return this.getStationaryModel().clone();
     if (this.stationary) {
         return this.getMovableModel().clone();
     } else {
@@ -369,6 +368,10 @@ StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
 
 StopBlock.prototype.getStationaryModel = function() {
     return StopBlock.stationaryModel;
+};
+
+StopBlock.prototype.getMovableModel = function() {
+    return StopBlock.model;
 };
 
 /**
@@ -491,6 +494,10 @@ HoleBlock.prototype.getStationaryModel = function() {
     return HoleBlock.stationaryModel;
 };
 
+HoleBlock.prototype.getMovableModel = function() {
+    return HoleBlock.model;
+};
+
 
 /**
  * @constructor
@@ -553,6 +560,10 @@ MirrorBlock.prototype.getStationaryModel = function() {
     return MirrorBlock.stationaryModel;
 };
 
+MirrorBlock.prototype.getMovableModel = function() {
+    return MirrorBlock.model;
+};
+
 
 /**
  * @constructor
@@ -609,6 +620,10 @@ PeriscopeBlock.prototype.specProperties = function() {
 
 PeriscopeBlock.prototype.getStationaryModel = function() {
     return PeriscopeBlock.stationaryModel;
+};
+
+PeriscopeBlock.prototype.getMovableModel = function() {
+    return PeriscopeBlock.model;
 };
 
 BuildingBlock.loadModels();
