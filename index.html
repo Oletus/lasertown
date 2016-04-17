@@ -62,8 +62,8 @@ var Game = function(resizer, renderer) {
 
     var numPlayers = 1;
     this.input = new InputMapper(this, numPlayers);
-    this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress/*, this.upRelease*/);
-    this.input.addListener(Gamepad.BUTTONS.DOWN_OR_ANALOG_DOWN, ['down', 's'], this.downPress/*, this.downRelease*/);
+    //this.input.addListener(Gamepad.BUTTONS.UP_OR_ANALOG_UP, ['up', 'w'], this.upPress/*, this.upRelease*/);
+    //this.input.addListener(Gamepad.BUTTONS.DOWN_OR_ANALOG_DOWN, ['down', 's'], this.downPress/*, this.downRelease*/);
     
     if (DEV_MODE) {
         this.input.addListener(undefined, ['a'], this.aPress);

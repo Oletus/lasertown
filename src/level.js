@@ -220,7 +220,11 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
         }
     } else if (mouseOverBuilding !== this.chosenBuilding && mouseOverBuilding !== null) {
-        this.chosenBuilding = mouseOverBuilding;
+        if (!mouseOverBuilding.stationary || this.editor) {
+            this.chosenBuilding = mouseOverBuilding;
+        } else {
+            this.chosenBuilding = null;
+        }
         this.updateChosenBuilding();
     }
     this.lastCursorPosition = viewportPos;
