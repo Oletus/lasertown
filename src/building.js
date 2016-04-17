@@ -311,7 +311,7 @@ var GoalBuilding = function(options) {
         {blockConstructor: StopBlock}
     ];
     this.initBuilding(options);
-    this.stationary = true;
+    this.setStationary(true);
 };
 
 GoalBuilding.prototype = new Building();
