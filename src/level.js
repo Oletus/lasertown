@@ -20,7 +20,6 @@ var Level = function(options) {
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
     this.raycaster = new THREE.Raycaster();
     
-    this.setupLights();
     this.setupGridGeometry();
     
     this.objects = [];
@@ -82,6 +81,8 @@ var Level = function(options) {
     });
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
+    
+    this.setupLights();
     
     if (DEV_MODE) {
         this.editor = new LevelEditor(this, this.scene);
@@ -202,6 +203,9 @@ Level.prototype.createGroundTileMesh = function() {
     var parent = new THREE.Object3D();
     parent.add(groundMesh);
     parent.add(sidewalkMesh);
+    parent.traverse(function(obj) {
+        obj.receiveShadow = true;
+    });
     return parent;
 };
 
@@ -218,9 +222,32 @@ Level.prototype.setupGridGeometry = function() {
 
 Level.prototype.setupLights = function() {
     this.scene.add(new THREE.AmbientLight(0x222222));
-    var mainLight = new THREE.DirectionalLight(0xccffff, 1);
+    var mainLight = new THREE.DirectionalLight(0x7799aa, 1);
     mainLight.position.set(0.5, 1, -1).normalize();
     this.scene.add(mainLight);
+    
+    var spotLight = new THREE.SpotLight(0x555566);
+    spotLight.position.set( 125, 250, -250 );
+    var spotTarget = this.getLookAtCenter();
+    
+    spotLight.target = new THREE.Object3D();
+    this.scene.add(spotLight.target);
+    spotLight.target.position.set(spotTarget.x, spotTarget.y, spotTarget.z);
+
+    spotLight.castShadow = true;
+    
+    /*var helper = new THREE.CameraHelper( spotLight.shadow.camera );
+    this.scene.add(helper);*/
+
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+
+    spotLight.shadow.camera.near = 5;
+    spotLight.shadow.camera.far = 500;
+    spotLight.shadow.camera.fov = 4;
+    spotLight.shadow.opacity = 0.5;
+
+    this.scene.add( spotLight );
     
     var fillLight = new THREE.DirectionalLight(0x662244, 1);
     fillLight.position.set(-1, 1, 1).normalize();

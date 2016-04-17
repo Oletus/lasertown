@@ -193,6 +193,8 @@ window['start'] = function() {
     }
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     
     var game;
     

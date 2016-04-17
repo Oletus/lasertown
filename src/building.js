@@ -357,7 +357,9 @@ BuildingBlock.prototype.setStationary = function(stationary) {
 
 BuildingBlock.prototype.updateModel = function() {
     this.modelParent.children = [];
-    this.modelParent.add(this.getModel());
+    var model = this.getModel();
+    model.castShadow = true;
+    this.modelParent.add(model);
 };
 
 BuildingBlock.prototype.getModel = function() {
