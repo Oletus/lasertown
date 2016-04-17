@@ -155,10 +155,10 @@ Level.prototype.getBuildingFromGrid = function(x, z) {
     return this.buildingGrid[x][z];
 };
 
-Level.prototype.handleLaser = function(x, z, loc) {
-    var building = this.getBuildingFromGrid(x, z);
+Level.prototype.handleLaser = function(loc) {
+    var building = this.getBuildingFromGrid(loc.x, loc.z);
     if (!building) {
-        if (x === this.goal.gridX && z === this.goal.gridZ) {
+        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ) {
             this.state.change(Level.State.SUCCESS);
         }
         return Laser.Handling.INFINITY;
@@ -245,7 +245,6 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         this.cameraControl.zoom(diffY);
         //this.cameraControl.moveOrbitAngle(-diffX * Math.abs(this.mouseDownCursorPosition.y) * 2 * Math.sign(viewportPos.y));
         this.cameraControl.moveOrbitAngle(diffX);
-        console.log(diffX);
     } else if (this.mouseDownBuilding) {
         var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
         if (Game.parameters.get('roundedMovement')) {

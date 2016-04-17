@@ -78,7 +78,7 @@ LevelEditor.prototype.pPress = function() {
     if (block !== null) {
         var dir = Laser.Direction.POSITIVE_X;
         if (block instanceof PeriscopeBlock) {
-            dir = Laser.cycleDirection(block.periscopeDirection);
+            dir = Laser.cycleHorizontalDirection(block.periscopeDirection);
         }
         var blockSpec = {
             blockConstructor: PeriscopeBlock,

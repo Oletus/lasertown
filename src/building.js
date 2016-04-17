@@ -338,6 +338,9 @@ var StopBlock = function(options) {
 StopBlock.prototype = new BuildingBlock();
 
 StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+        return Laser.Handling.CONTINUE;
+    }
     return Laser.Handling.STOP;
 };
 
@@ -436,6 +439,9 @@ HoleBlock.prototype = new BuildingBlock();
 
 HoleBlock.prototype.handleLaser = function(laserSegmentLoc) {
     var zLaser = (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z || laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z);
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+        return Laser.Handling.CONTINUE;
+    }
     if (this.holeDirection) {
         if (zLaser) {
             return Laser.Handling.STOP;
@@ -498,10 +504,13 @@ MirrorBlock.prototype.createMesh = function() {
 
 MirrorBlock.prototype.handleLaser = function(laserSegmentLoc) {
     var newLoc = new LaserSegmentLocation({
-        originX: this.building.gridX,
-        originZ: this.building.gridZ,
+        x: laserSegmentLoc.x,
+        z: laserSegmentLoc.z,
         y: laserSegmentLoc.y
     });
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+        return Laser.Handling.CONTINUE;
+    }
     if (this.mirrorDirection) {
         if (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z) {
             newLoc.direction = Laser.Direction.POSITIVE_X;
@@ -541,6 +550,7 @@ var PeriscopeBlock = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.initBuildingBlock(options);
+    this.verticalDirection = (this.isUpperBlock ? Laser.Direction.NEGATIVE_Y : Laser.Direction.POSITIVE_Y);
 };
 
 PeriscopeBlock.prototype = new BuildingBlock();
@@ -594,7 +604,7 @@ PeriscopeBlock.prototype.createMesh = function() {
     return parent;
 };
 
-PeriscopeBlock.prototype.getPair = function() {
+/*PeriscopeBlock.prototype.getPair = function() {
     var blocks = this.building.blocks;
     var i = blocks.indexOf(this);
     var pair = null;
@@ -612,19 +622,22 @@ PeriscopeBlock.prototype.getPair = function() {
         }
     }
     return pair;
-};
+};*/
 
 PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
-    var pairBlock = this.getPair();
-    if (pairBlock === null) {
-        return Laser.Handling.STOP;
-    }
     if (this.periscopeDirection === Laser.oppositeDirection(laserSegmentLoc.direction)) {
         return new LaserSegmentLocation({
-            originX: this.building.gridX,
-            originZ: this.building.gridZ,
-            y: pairBlock.topY - 0.5,
-            direction: pairBlock.periscopeDirection
+            x: this.building.gridX,
+            z: this.building.gridZ,
+            y: this.topY - 0.5,
+            direction: this.verticalDirection
+        });
+    } else if (this.verticalDirection === Laser.oppositeDirection(laserSegmentLoc.direction)) {
+        return new LaserSegmentLocation({
+            x: this.building.gridX,
+            z: this.building.gridZ,
+            y: this.topY - 0.5,
+            direction: this.periscopeDirection
         });
     } else {
         return Laser.Handling.STOP;

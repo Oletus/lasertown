@@ -5,9 +5,9 @@
  */
 var LaserSegmentLocation = function(options) {
     var defaults = {
-        originX: -1,
-        originZ: 2,
+        x: -1,
         y: 1.5,
+        z: 2,
         direction: Laser.Direction.POSITIVE_X,
     };
     objectUtil.initWithDefaults(this, defaults, options);
@@ -15,17 +15,17 @@ var LaserSegmentLocation = function(options) {
 
 LaserSegmentLocation.prototype.copy = function() {
     return new LaserSegmentLocation({
-        originX: this.originX,
-        originZ: this.originZ,
+        x: this.x,
         y: this.y,
+        z: this.z,
         direction: this.direction
     });
 };
 
 LaserSegmentLocation.prototype.equals = function(other) {
-    return this.originX === other.originX &&
-           this.originZ === other.originZ &&
+    return this.x === other.x &&
            this.y === other.y &&
+           this.z === other.z &&
            this.direction === other.direction;
 };
 
@@ -53,16 +53,22 @@ Laser.Direction = {
     POSITIVE_X: 0,
     NEGATIVE_X: 1,
     POSITIVE_Z: 2,
-    NEGATIVE_Z: 3
+    NEGATIVE_Z: 3,
+    POSITIVE_Y: 4,
+    NEGATIVE_Y: 5
 };
 
 
-Laser.cycleDirection = function(direction) {
+Laser.cycleHorizontalDirection = function(direction) {
     direction += 1;
     if (direction > Laser.Direction.NEGATIVE_Z) {
         direction = Laser.Direction.POSITIVE_X;
     }
     return direction;
+};
+
+Laser.isVerticalDirection = function(direction) {
+    return (direction === Laser.Direction.POSITIVE_Y || direction === Laser.Direction.NEGATIVE_Y);
 };
 
 Laser.offsetFromDirection = function(direction) {
@@ -71,6 +77,10 @@ Laser.offsetFromDirection = function(direction) {
             return new THREE.Vector3(1, 0, 0);
         case Laser.Direction.NEGATIVE_X:
             return new THREE.Vector3(-1, 0, 0);
+        case Laser.Direction.POSITIVE_Y:
+            return new THREE.Vector3(0, 1, 0);
+        case Laser.Direction.NEGATIVE_Y:
+            return new THREE.Vector3(0, -1, 0);
         case Laser.Direction.POSITIVE_Z:
             return new THREE.Vector3(0, 0, 1);
         case Laser.Direction.NEGATIVE_Z:
@@ -82,10 +92,14 @@ Laser.oppositeDirection = function(direction) {
     switch (direction) {
         case Laser.Direction.POSITIVE_X:
             return Laser.Direction.NEGATIVE_X;
-        case Laser.Direction.NEGATIVE_X:
-            return Laser.Direction.POSITIVE_X;
+        case Laser.Direction.POSITIVE_Y:
+            return Laser.Direction.NEGATIVE_Y;
         case Laser.Direction.POSITIVE_Z:
             return Laser.Direction.NEGATIVE_Z;
+        case Laser.Direction.NEGATIVE_X:
+            return Laser.Direction.POSITIVE_X;
+        case Laser.Direction.NEGATIVE_Y:
+            return Laser.Direction.POSITIVE_Y;
         case Laser.Direction.NEGATIVE_Z:
             return Laser.Direction.POSITIVE_Z;
     }
@@ -102,19 +116,22 @@ Laser.inPath = function(path, segment) {
 
 Laser.prototype.update = function(deltaTime) {
     var segmentIndex = 0;
-    var loc = this.segments[segmentIndex].loc;
-    var x = loc.originX;
-    var z = loc.originZ;
+    var loc = this.segments[segmentIndex].loc.copy();
 
     this.segments[segmentIndex].length = 0;
     var laserContinues = true;
     var path = [];
     while (laserContinues) {
         var offset = Laser.offsetFromDirection(loc.direction);
-        x = Math.round(x + offset.x);
-        z = Math.round(z + offset.z);
-        this.segments[segmentIndex].length += GRID_SPACING;
-        var handling = this.level.handleLaser(x, z, loc);
+        loc.x = Math.round(loc.x + offset.x);
+        loc.y = Math.round(loc.y + offset.y - 0.5) + 0.5;
+        loc.z = Math.round(loc.z + offset.z);
+        if (offset.y !== 0) {
+            this.segments[segmentIndex].length += 1;
+        } else {
+            this.segments[segmentIndex].length += GRID_SPACING;
+        }
+        var handling = this.level.handleLaser(loc);
         if (handling instanceof LaserSegmentLocation) {
             // Make sure that laser doesn't loop
             if (Laser.inPath(path, handling)) {
@@ -124,7 +141,7 @@ Laser.prototype.update = function(deltaTime) {
                 ++segmentIndex;
                 this.ensureSegmentExists(segmentIndex);
                 this.segments[segmentIndex].loc = handling;
-                loc = this.segments[segmentIndex].loc;
+                loc = this.segments[segmentIndex].loc.copy();
                 this.segments[segmentIndex].length = 0;
             }
         } else if (handling === Laser.Handling.STOP) {
@@ -211,8 +228,10 @@ LaserSegment.innerMaterial = (function() {
 
 LaserSegment.prototype.update = function(deltaTime) {
     this.origin.position.y = this.loc.y;
-    this.origin.position.x = this.level.gridXToWorld(this.loc.originX);
-    this.origin.position.z = this.level.gridZToWorld(this.loc.originZ);
+    this.origin.position.x = this.level.gridXToWorld(this.loc.x);
+    this.origin.position.z = this.level.gridZToWorld(this.loc.z);
+    this.origin.rotation.x = 0;
+    this.origin.rotation.y = 0;
     switch (this.loc.direction) {
         case Laser.Direction.POSITIVE_X:
             this.origin.rotation.y = Math.PI * 0.5;
@@ -225,6 +244,12 @@ LaserSegment.prototype.update = function(deltaTime) {
             break;
         case Laser.Direction.NEGATIVE_Z:
             this.origin.rotation.y = Math.PI;
+            break;
+        case Laser.Direction.POSITIVE_Y:
+            this.origin.rotation.x = -Math.PI * 0.5;
+            break;
+        case Laser.Direction.NEGATIVE_Y:
+            this.origin.rotation.x = Math.PI * 0.5;
             break;
     }
     
