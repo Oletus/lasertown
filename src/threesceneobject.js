@@ -31,13 +31,16 @@ ThreeSceneObject.prototype.removeFromScene = function() {
 
 ThreeSceneObject.prototype.ownsSceneObject = function(object) {
     var matches = false;
-    this.object.traverse(function(obj) {
+    this.getOwnQueryObject().traverse(function(obj) {
         if (obj === object) {
             matches = true;
         }
     });
     return matches;
-    
+};
+
+ThreeSceneObject.prototype.getOwnQueryObject = function() {
+    return this.object;
 };
 
 ThreeSceneObject.prototype.update = function(deltaTime) {

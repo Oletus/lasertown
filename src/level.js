@@ -20,10 +20,7 @@ var Level = function(options) {
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
     this.raycaster = new THREE.Raycaster();
     
-    this.setupGridGeometry();
-    
     this.objects = [];
-    this.buildingGrid = [];
     
     if (this.buildingGridSpec === null) {
         var buildingSpec = "{blocksSpec: [{blockConstructor: StopBlock}, {blockConstructor: StopBlock}]}";
@@ -35,6 +32,11 @@ var Level = function(options) {
             }
         }
     }
+    
+    this.setupGrid();
+    
+    this.buildingGrid = [];
+    
     for (var x = 0; x < this.buildingGridSpec.length; ++x) {
         var rowSpec = this.buildingGridSpec[x];
         this.buildingGrid.push([]);
@@ -43,11 +45,16 @@ var Level = function(options) {
                 level: this,
                 scene: this.interactiveScene,
                 gridX: x,
-                gridZ: z                
+                gridZ: z
             }, rowSpec[z]);
 
             this.objects.push(building);
             this.buildingGrid[x].push(building);
+            for (var i = 0; i < this.objects.length; ++i) {
+                if (this.objects[i] instanceof GridTile && this.objects[i].x === x && this.objects[i].z === z) {
+                    this.objects[i].building = building;
+                }
+            }
         }
     }
     
@@ -179,8 +186,29 @@ Level.prototype.getLookAtCenter = function() {
 Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x777777, specular: 0x222222 } );
 Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x111111 } );
 
-Level.prototype.createGroundTileMesh = function() {
-    var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.2);
+var GridTile = function(options) {
+    var defaults = {
+        z: 0,
+        x: 0
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    this.building = null;
+    
+    var gridMesh = this.createGroundTileMesh();
+    gridMesh.position.x = this.x * GRID_SPACING;
+    gridMesh.position.z = this.z * GRID_SPACING;
+    
+    this.initThreeSceneObject({
+        object: gridMesh,
+        scene: options.scene
+    });
+    this.addToScene();
+};
+
+GridTile.prototype = new ThreeSceneObject();
+
+GridTile.prototype.createGroundTileMesh = function() {
+    var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.4);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
     var extrudeSettings = {
         steps: 1,
@@ -191,31 +219,37 @@ Level.prototype.createGroundTileMesh = function() {
     var groundMesh = new THREE.Mesh( this.groundGeometry, Level.groundMaterial );
     
     var sidewalkShape = utilTHREE.createSquareWithHole(2.0, 1.2);
-    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, 0, 0));
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, -1.2, 0));
     var extrudeSettings = {
         steps: 1,
         bevelEnabled: false,
         extrudePath: line
     };
     this.sidewalkGeometry = new THREE.ExtrudeGeometry(sidewalkShape, extrudeSettings);
-    var sidewalkMesh = new THREE.Mesh( this.sidewalkGeometry, Level.sidewalkMaterial );
+    this.sidewalk = new THREE.Mesh( this.sidewalkGeometry, Level.sidewalkMaterial );
     
     var parent = new THREE.Object3D();
     parent.add(groundMesh);
-    parent.add(sidewalkMesh);
+    parent.add(this.sidewalk);
     parent.traverse(function(obj) {
         obj.receiveShadow = true;
     });
     return parent;
 };
 
-Level.prototype.setupGridGeometry = function() {    
-    for (var x = 0; x < this.width; ++x) {
-        for (var z = 0; z < this.depth; ++z) {
-            var gridMesh = this.createGroundTileMesh();
-            gridMesh.position.x = x * GRID_SPACING;
-            gridMesh.position.z = z * GRID_SPACING;
-            this.interactiveScene.add(gridMesh);
+GridTile.prototype.getOwnQueryObject = function() {
+    return this.sidewalk;
+};
+
+Level.prototype.setupGrid = function() {    
+    for (var x = 0; x < this.buildingGridSpec.length; ++x) {
+        for (var z = 0; z < this.buildingGridSpec[0].length; ++z) {
+            var tile = new GridTile({
+                x: x,
+                z: z,
+                scene: this.interactiveScene
+            });
+            this.objects.push(tile);
         }
     }
 };
@@ -264,8 +298,12 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             if (this.objects[i] instanceof Building && this.objects[i].ownsSceneObject(nearest.object)) {
                 mouseOverBuilding = this.objects[i];
             }
+            if (this.objects[i] instanceof GridTile && this.objects[i].ownsSceneObject(nearest.object)) {
+                mouseOverBuilding = this.objects[i].building;
+            }
         }
     }
+    
     if (this.mouseDownMoveCamera) {
         var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
         var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
@@ -317,6 +355,7 @@ Level.prototype.mouseUp = function() {
     }
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
+    this.updateChosenBuilding();
 };
 
 Level.prototype.updateChosenBuilding = function() {
