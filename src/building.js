@@ -26,6 +26,8 @@ Building.prototype.initBuilding = function(options) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
+    this.roof = new BuildingRoof({building: this, scene: this.scene, level: this.level});
+    this.updateRoof();
 };
 
 Building.prototype.update = function(deltaTime) {
@@ -34,6 +36,7 @@ Building.prototype.update = function(deltaTime) {
         this.blocks[i].topY = this.topY - i;
         this.blocks[i].update(deltaTime);
     }
+    this.roof.update();
 };
 
 Building.prototype.upPress = function() {
@@ -105,10 +108,12 @@ Building.prototype.constructBlockFromSpec = function(spec) {
 
 Building.prototype.addBlock = function(spec) {
     this.blocks.push(this.constructBlockFromSpec(spec));
+    this.updateRoof();
 };
 
 Building.prototype.addBlockToTop = function(spec) {
     this.blocks.splice(0, 0, this.constructBlockFromSpec(spec));
+    this.updateRoof();
 };
 
 Building.prototype.removeBlock = function(block) {
@@ -118,15 +123,28 @@ Building.prototype.removeBlock = function(block) {
     if (this.blocks.length === 1) {
         this.setStationary(true);
     }
+    this.updateRoof();
 };
 
 Building.prototype.replaceBlockSpec = function(blockToReplace, spec) {
     var ind = this.blocks.indexOf(blockToReplace);
     blockToReplace.removeFromScene();
     this.blocks[ind] = this.constructBlockFromSpec(spec);
+    this.updateRoof();
+};
+
+Building.prototype.updateRoof = function() {
+    if (this.blocks[0] instanceof MirrorBlock || this.blocks[0] instanceof GoalBlock) {
+        this.roof.removeFromScene();
+    } else {
+        this.roof.addToScene();
+    }
 };
 
 Building.prototype.ownsSceneObject = function(object) {
+    if (this.roof.ownsSceneObject(object)) {
+        return true;
+    }
     for (var i = 0; i < this.blocks.length; ++i) {
         if (this.blocks[i].ownsSceneObject(object)) {
             return true;
@@ -141,6 +159,7 @@ Building.prototype.setStationary = function(stationary) {
         for (var i = 0; i < this.blocks.length; ++i) {
             this.blocks[i].setStationary(stationary);
         }
+        this.roof.setStationary(stationary);
     }
 };
 
@@ -217,6 +236,52 @@ BuildingCursor.prototype.createMesh = function() {
     return new THREE.Mesh(geometry, material);
 };
 
+
+/**
+ * @constructor
+ */
+var BuildingRoof = function(options) {
+    var defaults = {
+        building: null,
+        level: null,
+        stationary: false
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+    this.modelParent = new THREE.Object3D();
+    this.initThreeSceneObject({
+        object: this.modelParent,
+        scene: options.scene
+    });
+    this.updateModel();
+};
+
+BuildingRoof.prototype = new ThreeSceneObject();
+
+BuildingRoof.prototype.setStationary = function(stationary) {
+    this.stationary = stationary;
+    this.updateModel();
+};
+
+BuildingRoof.prototype.updateModel = function() {
+    this.modelParent.children = [];
+    this.modelParent.add(this.getModel());
+};
+
+BuildingRoof.prototype.getModel = function() {
+    if (this.stationary) {
+        return BuildingRoof.model.clone();
+    } else {
+        return BuildingRoof.stationaryModel.clone();
+    }
+};
+
+BuildingRoof.prototype.update = function(deltaTime) {
+    this.object.position.x = this.level.gridXToWorld(this.building.gridX);
+    this.object.position.z = this.level.gridZToWorld(this.building.gridZ);
+    this.object.position.y = this.building.topY;
+};
+
+
 /**
  * @constructor
  */
@@ -265,6 +330,9 @@ BuildingBlock.loadModels = function() {
     utilTHREE.loadJSONModel('periscope', function(object) {
         PeriscopeBlock.model = object;
     });
+    utilTHREE.loadJSONModel('roof', function(object) {
+        BuildingRoof.model = object;
+    });
     utilTHREE.loadJSONModel('stop_stationary', function(object) {
         StopBlock.stationaryModel = object;
     });
@@ -276,6 +344,9 @@ BuildingBlock.loadModels = function() {
     });
     utilTHREE.loadJSONModel('periscope_stationary', function(object) {
         PeriscopeBlock.stationaryModel = object;
+    });
+    utilTHREE.loadJSONModel('roof_stationary', function(object) {
+        BuildingRoof.stationaryModel = object;
     });
 };
 
