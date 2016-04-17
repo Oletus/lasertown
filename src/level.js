@@ -200,16 +200,29 @@ Level.prototype.setupLights = function() {
 Level.prototype.setCursorPosition = function(viewportPos) {
     this.raycaster.setFromCamera(viewportPos, this.camera);
     var intersects = this.raycaster.intersectObjects(this.interactiveScene.children, true);
-    this.chosenBuilding = null;
+    var mouseOverBuilding = null;
     if (intersects.length > 0) {
         var nearest = intersects[0];
         for (var i = 0; i < this.objects.length; ++i) {
             if (this.objects[i] instanceof Building && this.objects[i].ownsSceneObject(nearest.object)) {
-                this.chosenBuilding = this.objects[i];
+                mouseOverBuilding = this.objects[i];
             }
         }
     }
+    if (mouseOverBuilding !== this.chosenBuilding && !this.mouseDownBuilding && mouseOverBuilding !== null) {
+        this.chosenBuilding = mouseOverBuilding;
+    }
     this.updateChosenBuilding();
+};
+
+Level.prototype.mouseDown = function() {
+    if (this.chosenBuilding !== null) {
+        this.mouseDownBuilding = this.chosenBuilding;
+    }
+};
+
+Level.prototype.mouseUp = function() {
+    this.mouseDownBuilding = null;
 };
 
 Level.prototype.updateChosenBuilding = function() {

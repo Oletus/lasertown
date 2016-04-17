@@ -124,6 +124,16 @@ Game.prototype.mouseMove = function(event) {
     this.level.setCursorPosition(this.viewportPos(event));
 };
 
+Game.prototype.mouseDown = function(event) {
+    this.level.setCursorPosition(this.viewportPos(event));
+    this.level.mouseDown();
+};
+
+Game.prototype.mouseUp = function(event) {
+    this.level.setCursorPosition(this.viewportPos(event));
+    this.level.mouseUp();
+};
+
 Game.prototype.viewportPos = function(event) {
     var canvasPos = this.resizer.getCanvasPosition(event);
     canvasPos.x = 2 * canvasPos.x / this.resizer.canvas.width - 1;
@@ -193,11 +203,19 @@ window['start'] = function() {
         if (e.type === 'mousemove') {
             game.mouseMove(e);
         }
+        if (e.type === 'mousedown') {
+            game.mouseDown(e);
+        }
+        if (e.type === 'mouseup') {
+            game.mouseUp(e);
+        }
         e.preventDefault();
     };
     
     game = new Game(resizer, renderer);
     resizer.canvas.addEventListener('mousemove', eventListener);
+    resizer.canvas.addEventListener('mouseup', eventListener);
+    resizer.canvas.addEventListener('mousedown', eventListener);
     startMainLoop([resizer, game, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
 };
 </script>
