@@ -14,6 +14,8 @@
 <script src="src/canvasui.js"></script>
 <script src="src/monospacebitmapfont.js"></script>
 <script src="src/lib/three.min.js"></script>
+<script src="src/lib/OBJLoader.js"></script>
+<script src="src/lib/MTLLoader.js"></script>
 <!-- dev mode helpers -->
 <script src="src/lib/dat.gui.js"></script>
 <script src="src/gameparameters.js"></script>
@@ -79,7 +81,11 @@ var Game = function(resizer, renderer) {
         this.input.addListener(undefined, ['ctrl+s'], this.ctrlsPress);
     }
     
-    this.initLevel();
+    var that = this;
+    var initLevel = function() {
+        that.initLevel();
+    };
+    utilTHREE.onAllLoaded(initLevel);
 };
 
 Game.prototype.zPress = function() {
@@ -113,26 +119,24 @@ Game.prototype.ctrlsPress = function() {
     this.level.editor.ctrlsPress();
 };
 
-Game.prototype.upPress = function() {
-    this.level.upPress();
-};
-
-Game.prototype.downPress = function() {
-    this.level.downPress();
-};
-
 Game.prototype.mouseMove = function(event) {
-    this.level.setCursorPosition(this.viewportPos(event));
+    if (this.level) {
+        this.level.setCursorPosition(this.viewportPos(event));
+    }
 };
 
 Game.prototype.mouseDown = function(event) {
-    this.level.setCursorPosition(this.viewportPos(event));
-    this.level.mouseDown();
+    if (this.level) {
+        this.level.setCursorPosition(this.viewportPos(event));
+        this.level.mouseDown();
+    }
 };
 
 Game.prototype.mouseUp = function(event) {
-    this.level.setCursorPosition(this.viewportPos(event));
-    this.level.mouseUp();
+    if (this.level) {
+        this.level.setCursorPosition(this.viewportPos(event));
+        this.level.mouseUp();
+    }
 };
 
 Game.prototype.viewportPos = function(event) {
@@ -153,19 +157,22 @@ Game.prototype.initLevel = function() {
     var options = {
         cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
     };
-    //this.level = new Level(options);
     this.level = Level.fromSpec(options, levelData['4']);
 };
 
 Game.prototype.render = function() {
-    this.level.render(this.renderer);
+    if (this.level) {
+        this.level.render(this.renderer);
+    }
 };
 
 Game.prototype.update = function(deltaTime) {
     this.time += deltaTime;
     this.input.update();
-    // Update your level here
-    this.level.update(deltaTime);
+
+    if (this.level) {
+        this.level.update(deltaTime);
+    }
     
     Audio.muteAll(Game.parameters.get('muteAudio'));
 };

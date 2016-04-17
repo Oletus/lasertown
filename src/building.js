@@ -279,6 +279,12 @@ BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, s
 BuildingBlock.mirrorMaterial.transparent = true;
 BuildingBlock.mirrorMaterial.opacity = 0.7;
 
+BuildingBlock.loadModels = function() {
+    utilTHREE.loadMTLOBJ('lazertown_brick.obj', 'lazertown_brick.mtl', function(object) {
+        StopBlock.meshModel = object;
+    });
+};
+
 BuildingBlock.prototype.createMesh = function() {
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = BuildingBlock.wallMaterial;
@@ -348,19 +354,10 @@ StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
 };
 
 StopBlock.prototype.createMesh = function() {
-    var geometry = new THREE.BoxGeometry( 0.95, 0.8, 0.95 );
-    var material = BuildingBlock.wallMaterial;
-    var blockMesh = new THREE.Mesh(geometry, material);
-    blockMesh.position.y = -0.1;
-    
-    var decorGeometry = new THREE.BoxGeometry( 1, 0.2, 1 );
-    var material2 = BuildingBlock.wallMaterial2;
-    var decorMesh = new THREE.Mesh(decorGeometry, material2);
-    decorMesh.position.y = 0.4;
-    
     var parent = new THREE.Object3D();
-    parent.add(blockMesh);
-    parent.add(decorMesh);
+
+    parent.add(StopBlock.meshModel.clone());
+
     return parent;
 };
 
@@ -650,3 +647,5 @@ PeriscopeBlock.prototype.handleLaser = function(laserSegmentLoc) {
 PeriscopeBlock.prototype.specProperties = function() {
     return ['periscopeDirection', 'isUpperBlock'];
 };
+
+BuildingBlock.loadModels();
