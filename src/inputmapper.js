@@ -160,7 +160,7 @@ InputMapper.prototype.addListener = function(gamepadButton, keyboardButtons, dow
                     }
                     e.preventDefault();
                 };
-                var keyUpCallback = function() {
+                var keyUpCallback = function(e) {
                     var player = that.getPlayerIndex(InputMapper.KEYBOARD, kbIndex);
                     that.keysDown[keyboardButtons[kbIndex]] = false;
                     var callbacksToCall = that.upCallbacksForKey[keyboardButtons[kbIndex]];
