@@ -167,22 +167,40 @@ Level.prototype.moveCamera = function(lookAt) {
     this.camera.lookAt(lookAt);
 };
 
-Level.prototype.setupGridGeometry = function() {
-    var faceSize = GRID_SPACING;
-    var holeSize = 1.2; // hole size
-    var shape = utilTHREE.createSquareWithHole(faceSize, holeSize);
+Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x777777, specular: 0x222222 } );
+Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x222222 } );
+
+Level.prototype.createGroundTileMesh = function() {
+    var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
     var extrudeSettings = {
         steps: 1,
         bevelEnabled: false,
         extrudePath: line
     };
-    this.gridGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    this.groundGeometry = new THREE.ExtrudeGeometry(groundShape, extrudeSettings);
+    var groundMesh = new THREE.Mesh( this.groundGeometry, Level.groundMaterial );
     
+    var sidewalkShape = utilTHREE.createSquareWithHole(2.0, 1.2);
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, 0, 0));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    this.sidewalkGeometry = new THREE.ExtrudeGeometry(sidewalkShape, extrudeSettings);
+    var sidewalkMesh = new THREE.Mesh( this.sidewalkGeometry, Level.sidewalkMaterial );
+    
+    var parent = new THREE.Object3D();
+    parent.add(groundMesh);
+    parent.add(sidewalkMesh);
+    return parent;
+};
+
+Level.prototype.setupGridGeometry = function() {    
     for (var x = 0; x < this.width; ++x) {
         for (var z = 0; z < this.depth; ++z) {
-            var material = new THREE.MeshPhongMaterial( { color: 0x88ff88, specular: 0x222222 } );
-            var gridMesh = new THREE.Mesh( this.gridGeometry, material );
+            var gridMesh = this.createGroundTileMesh();
             gridMesh.position.x = x * GRID_SPACING;
             gridMesh.position.z = z * GRID_SPACING;
             this.interactiveScene.add(gridMesh);

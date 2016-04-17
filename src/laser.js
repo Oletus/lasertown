@@ -172,12 +172,17 @@ var LaserSegment = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
     
+    this.mesh = new THREE.Object3D();
+    
     var geometry = new THREE.BoxGeometry( 0.2, 0.2, 1 );
-    var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xff5555 } );
-    material.blending = THREE.AdditiveBlending;
-    material.transparent = true;
-    material.opacity = 0.7;
-    this.mesh = new THREE.Mesh(geometry, material);
+    var material = LaserSegment.outerMaterial;
+    var outerMesh = new THREE.Mesh(geometry, material);
+    this.mesh.add(outerMesh);
+    
+    var geometry = new THREE.BoxGeometry( 0.07, 0.07, 1 );
+    var material = LaserSegment.innerMaterial;
+    var innerMesh = new THREE.Mesh(geometry, material);
+    this.mesh.add(innerMesh);
     
     this.origin = new THREE.Object3D();
     this.origin.add(this.mesh);
@@ -191,6 +196,18 @@ var LaserSegment = function(options) {
 };
 
 LaserSegment.prototype = new ThreeSceneObject();
+
+LaserSegment.outerMaterial = (function() {
+    var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xff5555 } );
+    material.blending = THREE.AdditiveBlending;
+    material.transparent = true;
+    material.opacity = 0.7;
+    return material;
+})();
+LaserSegment.innerMaterial = (function() {
+    var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xffffff } );
+    return material;
+})();
 
 LaserSegment.prototype.update = function(deltaTime) {
     this.origin.position.y = this.loc.y;

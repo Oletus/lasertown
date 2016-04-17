@@ -248,19 +248,30 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 BuildingBlock.prototype.setStationary = function(stationary) {
     this.object.traverse(function(obj) {
         if (obj instanceof THREE.Mesh) {
-            if (obj.material === BuildingBlock.wallMaterial && stationary) {
-                obj.material = BuildingBlock.stationaryWallMaterial;
-            } else if (obj.material === BuildingBlock.stationaryWallMaterial && !stationary) {
-                obj.material = BuildingBlock.wallMaterial;
+            if (stationary) {
+                if (obj.material === BuildingBlock.wallMaterial) {
+                    obj.material = BuildingBlock.stationaryWallMaterial;
+                }
+                if (obj.material === BuildingBlock.wallMaterial2) {
+                    obj.material = BuildingBlock.stationaryWallMaterial2;
+                }
+            } else {
+                if (obj.material === BuildingBlock.stationaryWallMaterial) {
+                    obj.material = BuildingBlock.wallMaterial;
+                }
+                if (obj.material === BuildingBlock.stationaryWallMaterial2) {
+                    obj.material = BuildingBlock.wallMaterial2;
+                }
             }
         }
     });
-    
 };
 
-BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
-BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xffffff } );
+BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xff88aa, specular: 0xffffff } );
+BuildingBlock.wallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xffbbdd, specular: 0xffffff } );
 BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0xffffff } );
+BuildingBlock.stationaryWallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xaaaaaa, specular: 0xffffff } );
+BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial.transparent = true;
 BuildingBlock.mirrorMaterial.opacity = 0.7;
@@ -330,6 +341,22 @@ StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
     return Laser.Handling.STOP;
 };
 
+StopBlock.prototype.createMesh = function() {
+    var geometry = new THREE.BoxGeometry( 0.95, 0.8, 0.95 );
+    var material = BuildingBlock.wallMaterial;
+    var blockMesh = new THREE.Mesh(geometry, material);
+    blockMesh.position.y = -0.1;
+    
+    var decorGeometry = new THREE.BoxGeometry( 1, 0.2, 1 );
+    var material2 = BuildingBlock.wallMaterial2;
+    var decorMesh = new THREE.Mesh(decorGeometry, material2);
+    decorMesh.position.y = 0.4;
+    
+    var parent = new THREE.Object3D();
+    parent.add(blockMesh);
+    parent.add(decorMesh);
+    return parent;
+};
 
 /**
  * @constructor
