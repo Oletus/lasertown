@@ -93,7 +93,7 @@ Level.prototype.getSpec = function() {
         var row = this.buildingGrid[x];
         var rowSpec = '[';
         for (var z = 0; z < row.length; ++z) {
-            rowSpec += row[z].getSpec();
+            rowSpec += "'" + row[z].getSpec() + "'";
             if (z < row.length - 1) {
                 rowSpec += ', '
             }
@@ -101,7 +101,7 @@ Level.prototype.getSpec = function() {
         rowSpec += ']';
         buildingGridSpec += rowSpec;
         if (x < this.buildingGrid.length - 1) {
-            buildingGridSpec += ',\n'
+            buildingGridSpec += ','
         }
     }
     buildingGridSpec += ']';

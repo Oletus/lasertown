@@ -36,6 +36,7 @@
 <script src="src/utilthree.js"></script>
 
 <!-- game specific-->
+<script src="src/leveldata.js"></script>
 <script src="src/editor.js"></script>
 <script src="src/level.js"></script>
 <script src="src/building.js"></script>
@@ -137,9 +138,11 @@ Game.prototype.setCameraAspect = function(aspect) {
 };
 
 Game.prototype.initLevel = function() {
-    this.level = new Level({
+    var options = {
         cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
-    });
+    };
+    //this.level = new Level(options);
+    this.level = Level.fromSpec(options, levelData.empty);
 };
 
 Game.prototype.render = function() {
