@@ -12,7 +12,8 @@ Building.prototype.initBuilding = function(options) {
         scene: null,
         gridX: 0,
         gridZ: 0,
-        blocksSpec: [] // Listed from top downwards
+        blocksSpec: [], // Listed from top downwards
+        stationary: false
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.topY = this.blocksSpec.length - 1;
@@ -22,12 +23,12 @@ Building.prototype.initBuilding = function(options) {
         var spec = this.blocksSpec[i];
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
-    this.stationary = false;
 };
 
 Building.fromSpec = function(options, spec) {
     var parsedSpec = parseSpec(spec);
     options.blocksSpec = parsedSpec.blocksSpec;
+    options.stationary = parsedSpec.stationary;
     var building = new Building();
     building.initBuilding(options);
     return building;
@@ -154,7 +155,7 @@ Building.prototype.getSpec = function() {
             spec += ', ';
         }
     }
-    spec += ']}'
+    spec += '], stationary: ' + this.stationary + '}'
     return spec;
 };
 
