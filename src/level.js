@@ -81,9 +81,32 @@ var Level = function(options) {
     }
 };
 
-/*Level.fromSpec = function() {
-    parseSpec('');
-};*/
+Level.fromSpec = function(options, spec) {
+    var parsedSpec = parseSpec(spec);
+    options.buildingGridSpec = parsedSpec.buildingGridSpec;
+    return new Level(options);
+};
+
+Level.prototype.getSpec = function() {
+    var buildingGridSpec = '[';
+    for (var x = 0; x < this.buildingGrid.length; ++x) {
+        var row = this.buildingGrid[x];
+        var rowSpec = '[';
+        for (var z = 0; z < row.length; ++z) {
+            rowSpec += row[z].getSpec();
+            if (z < row.length - 1) {
+                rowSpec += ', '
+            }
+        }
+        rowSpec += ']';
+        buildingGridSpec += rowSpec;
+        if (x < this.buildingGrid.length - 1) {
+            buildingGridSpec += ',\n'
+        }
+    }
+    buildingGridSpec += ']';
+    return '{buildingGridSpec: ' + buildingGridSpec + '}';
+};
 
 Level.State = {
     IN_PROGRESS: 0,

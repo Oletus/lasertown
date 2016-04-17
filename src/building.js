@@ -150,6 +150,9 @@ Building.prototype.getSpec = function() {
     var spec = '{blocksSpec: ['
     for (var i = 0; i < this.blocks.length; ++i) {
         spec += this.blocks[i].getSpec();
+        if (i < this.blocks.length - 1) {
+            spec += ', ';
+        }
     }
     spec += ']}'
     return spec;
@@ -266,7 +269,16 @@ BuildingBlock.prototype.update = function(deltaTime) {
 };
 
 BuildingBlock.prototype.getSpec = function() {
-    var spec = "{blockConstructor: " + this.constructor.name;
+    var spec = "{blockConstructor: ";
+    if (this instanceof StopBlock) {
+        spec += 'StopBlock';
+    } else if (this instanceof MirrorBlock) {
+        spec += 'MirrorBlock';
+    } else if (this instanceof HoleBlock) {
+        spec += 'HoleBlock';
+    } else if (this instanceof PeriscopeBlock) {
+        spec += 'PeriscopeBlock';
+    }
     var specProps = this.specProperties();
     for (var i = 0; i < specProps.length; ++i) {
         spec += ', ' + specProps[i] + ': ' + this[specProps[i]];

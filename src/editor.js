@@ -107,6 +107,10 @@ LevelEditor.prototype.qPress = function() {
     }
 };
 
+LevelEditor.prototype.ctrlsPress = function() {
+    console.log(this.level.getSpec());
+};
+
 LevelEditor.prototype.updateBuildingCursor = function() {
     this.buildingCursor.y = this.chosenY + 0.7;
     this.chosenBuilding = this.level.chosenBuilding;
