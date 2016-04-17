@@ -198,7 +198,7 @@ Level.prototype.setupLights = function() {
 };
 
 Level.prototype.setCursorPosition = function(viewportPos) {
-    this.raycaster.setFromCamera(viewportPos, this.camera);
+    this.raycaster.setFromCamera(viewportPos.clone(), this.camera);
     var intersects = this.raycaster.intersectObjects(this.interactiveScene.children, true);
     var mouseOverBuilding = null;
     if (intersects.length > 0) {
@@ -209,19 +209,36 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             }
         }
     }
-    if (mouseOverBuilding !== this.chosenBuilding && !this.mouseDownBuilding && mouseOverBuilding !== null) {
+    if (this.mouseDownBuilding) {
+        var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
+        if (Game.parameters.get('roundedMovement')) {
+            steps = Math.round(steps);
+        }
+        this.chosenBuilding.topYTarget = this.mouseDownTopYTarget - steps;
+        this.chosenBuilding.clampY();
+        if (!Game.parameters.get('roundedMovement')) {
+            this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
+        }
+    } else if (mouseOverBuilding !== this.chosenBuilding && mouseOverBuilding !== null) {
         this.chosenBuilding = mouseOverBuilding;
+        this.updateChosenBuilding();
     }
-    this.updateChosenBuilding();
+    this.lastCursorPosition = viewportPos;
 };
 
 Level.prototype.mouseDown = function() {
     if (this.chosenBuilding !== null) {
         this.mouseDownBuilding = this.chosenBuilding;
+        this.mouseDownCursorPosition = this.lastCursorPosition;
+        this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
     }
 };
 
 Level.prototype.mouseUp = function() {
+    if (this.mouseDownBuilding) {
+        this.chosenBuilding.topYTarget = Math.round(this.chosenBuilding.topYTarget);
+        this.chosenBuilding.clampY();
+    }
     this.mouseDownBuilding = null;
 };
 
