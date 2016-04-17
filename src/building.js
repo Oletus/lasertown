@@ -76,6 +76,9 @@ Building.prototype.getBlockAtLevel = function(y) {
 Building.prototype.handleLaser = function(laserSegmentLoc) {
     var block = this.getBlockAtLevel(laserSegmentLoc.y);
     if (block === null) {
+        if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+            return Laser.Handling.INFINITY;
+        }
         return Laser.Handling.CONTINUE;
     } else {
         return block.handleLaser(laserSegmentLoc);
@@ -338,7 +341,7 @@ var StopBlock = function(options) {
 StopBlock.prototype = new BuildingBlock();
 
 StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
-    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction) && this.topY !== this.building.topY) {
         return Laser.Handling.CONTINUE;
     }
     return Laser.Handling.STOP;
