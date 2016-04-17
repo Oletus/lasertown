@@ -170,7 +170,7 @@ Level.prototype.handleLaser = function(x, z, loc) {
 Level.prototype.getLookAtCenter = function() {
     return new THREE.Vector3(
         (this.buildingGrid.length - 1) * GRID_SPACING * 0.5,
-        0,
+        -1.5,
         (this.buildingGrid[0].length - 1) * GRID_SPACING * 0.5
     );
 };
@@ -239,6 +239,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
         var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
         this.cameraControl.zoom(diffY);
+        //this.cameraControl.moveOrbitAngle(-diffX * Math.abs(this.mouseDownCursorPosition.y) * 2 * Math.sign(viewportPos.y));
         this.cameraControl.moveOrbitAngle(diffX);
         console.log(diffX);
     } else if (this.mouseDownBuilding) {
