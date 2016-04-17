@@ -38,6 +38,9 @@ utilTHREE.createUShape = function(faceSize, edgeSize, bottomEdgeSize) {
     return shape;
 };
 
+/**
+ * Path to load models from.
+ */
 utilTHREE.modelsPath = 'assets/models/';
 
 /**
@@ -48,6 +51,19 @@ utilTHREE.createdCount = 0;
  * How many models have been fully loaded.
  */
 utilTHREE.loadedCount = 0;
+
+utilTHREE.loadJSONModel = function(filename, objectCallback) {
+    var loader = new THREE.JSONLoader();
+    
+    ++utilTHREE.createdCount;
+    
+    loader.load(utilTHREE.modelsPath + filename + '.json', function(geometry, materials) {
+        var material = new THREE.MeshFaceMaterial(materials);
+        var mesh = new THREE.Mesh(geometry, material);
+        objectCallback(mesh);
+        ++utilTHREE.loadedCount;
+    });
+};
 
 utilTHREE.loadMTLOBJ = function(objFilename, mtlFilename, objectCallback) {
     var materials;
@@ -62,8 +78,8 @@ utilTHREE.loadMTLOBJ = function(objFilename, mtlFilename, objectCallback) {
         objLoader.setMaterials( materials);
         objLoader.setPath(utilTHREE.modelsPath);
         objLoader.load(objFilename, function(object) {
-            ++utilTHREE.loadedCount;
             objectCallback(object);
+            ++utilTHREE.loadedCount;
         }, onProgress, onError);
     };
     
