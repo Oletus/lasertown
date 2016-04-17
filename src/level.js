@@ -78,7 +78,7 @@ var Level = function(options) {
     this.cameraControl = new OrbitCameraControl({
         camera: this.camera,
         lookAt: this.getLookAtCenter(),
-        orbitAngle: Math.PI * 0.25
+        orbitAngle: Math.PI * 0.34
     });
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
