@@ -259,6 +259,7 @@ BuildingBlock.prototype.setStationary = function(stationary) {
 };
 
 BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa88, specular: 0xffffff } );
+BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xffffff } );
 BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial.transparent = true;
@@ -306,6 +307,7 @@ BuildingBlock.prototype.specProperties = function() {
 var GoalBuilding = function(options) {
     options.blocksSpec = [
         {blockConstructor: GoalBlock},
+        {blockConstructor: GoalPostBlock},
         {blockConstructor: StopBlock}
     ];
     this.initBuilding(options);
@@ -333,6 +335,7 @@ StopBlock.prototype.handleLaser = function(laserSegmentLoc) {
  * @constructor
  */
 var GoalBlock = function(options) {
+    this.goalDirection = (options.building.gridX > options.building.gridZ) || (options.building.gridX < 0);
     this.initBuildingBlock(options);
 };
 
@@ -341,6 +344,54 @@ GoalBlock.prototype = new BuildingBlock();
 GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
     return Laser.Handling.INFINITY;
 };
+
+GoalBlock.prototype.createMesh = function() {
+    var shape = utilTHREE.createUShape(1.0, 0.1, 0.3);
+
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.05), new THREE.Vector3(0, 0, 0.05));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    var material = BuildingBlock.goalMaterial;
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.z = -Math.PI * 0.5;
+    var parent = new THREE.Object3D();
+    parent.add(mesh);
+    parent.rotation.y = Math.PI * (this.goalDirection ? 0.5 : 0);
+    return parent;
+};
+
+/**
+ * @constructor
+ */
+var GoalPostBlock = function(options) {
+    this.goalDirection = (options.building.gridX > options.building.gridZ) || (options.building.gridX < 0);
+    this.initBuildingBlock(options);
+};
+
+GoalPostBlock.prototype = new BuildingBlock();
+
+GoalPostBlock.prototype.handleLaser = function(laserSegmentLoc) {
+    return Laser.Handling.INFINITY;
+};
+
+GoalPostBlock.prototype.createMesh = function() {
+    var geometry = new THREE.BoxGeometry(0.1, 1, 0.1);
+    var material = BuildingBlock.goalMaterial;
+    var mesh1 = new THREE.Mesh(geometry, material);
+    var mesh2 = new THREE.Mesh(geometry, material);
+    var parent = new THREE.Object3D();
+    parent.add(mesh1);
+    parent.add(mesh2);
+    mesh1.position.x = -0.45;
+    mesh2.position.x = 0.45;
+    parent.rotation.y = Math.PI * (this.goalDirection ? 0.5 : 0);
+    return parent;
+};
+
 
 
 /**
