@@ -11,7 +11,8 @@ var LevelEditor = function(level, scene) {
         level: this.level,
         scene: this.scene,
         color: 0xff0000,
-        y: this.chosenY + 0.5
+        y: this.chosenY + 0.7,
+        arrows: false
     });
     
     this.buildingCursor.addToScene();
@@ -115,7 +116,7 @@ LevelEditor.prototype.ctrlsPress = function() {
 };
 
 LevelEditor.prototype.updateBuildingCursor = function() {
-    this.buildingCursor.y = this.chosenY + 0.7;
+    this.buildingCursor.y = this.chosenY + 0.4;
     this.chosenBuilding = this.level.chosenBuilding;
     if (this.chosenBuilding) {
         this.buildingCursor.gridX = this.chosenBuilding.gridX;

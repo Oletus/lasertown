@@ -199,30 +199,47 @@ var BuildingCursor = function(options) {
         gridX: 0,
         gridZ: 0,
         color: 0xaaccff,
-        y: 0.2
+        arrows: true,
+        y: 1.0
     };
     objectUtil.initWithDefaults(this, defaults, options);
     
     this.mesh = this.createMesh();
     
+    this.origin = new THREE.Object3D();
+    this.origin.add(this.mesh);
+    
+    this.arrowsVisible = true;
+    if (this.arrows) {
+        this.arrowSets = [];
+        this.arrowSets.push(new BuildingCursorArrows({z: 0.85, scene: this.mesh, color: this.color}));
+        this.arrowSets.push(new BuildingCursorArrows({z: -0.85, scene: this.mesh, color: this.color}));
+    }
+    
     this.initThreeSceneObject({
-        object: this.mesh,
+        object: this.origin,
         scene: options.scene
     });
 };
-
+    
 BuildingCursor.prototype = new ThreeSceneObject();
+
+BuildingCursor.material = function(color) {
+    var material = new THREE.MeshPhongMaterial( { color: color, emissive: 0x448888 } );
+    material.transparent = true;
+    material.opacity = 0.7;
+    return material;
+};
 
 BuildingCursor.prototype.update = function(deltaTime) {
     this.object.position.x = this.level.gridXToWorld(this.gridX);
     this.object.position.z = this.level.gridZToWorld(this.gridZ);
     this.object.position.y = this.y;
-    this.object.rotation.y += deltaTime;
+    this.mesh.rotation.y += deltaTime;
 };
 
 BuildingCursor.prototype.createMesh = function() {
     var shape = utilTHREE.createSquareWithHole(1.9, 1.5);
-
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -0.1, 0), new THREE.Vector3(0, 0.1, 0));
     var extrudeSettings = {
         steps: 1,
@@ -230,11 +247,69 @@ BuildingCursor.prototype.createMesh = function() {
         extrudePath: line
     };
     var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    var material = new THREE.MeshPhongMaterial( { color: this.color, emissive: 0x448888 } );
-    material.transparent = true;
-    material.opacity = 0.7;
 
-    return new THREE.Mesh(geometry, material);
+    return new THREE.Mesh(geometry, BuildingCursor.material(this.color));
+};
+
+BuildingCursor.prototype.setArrowsVisible = function(arrowsVisible) {
+    if (this.arrowsVisible !== arrowsVisible) {
+        for (var i = 0; i < this.arrowSets.length; ++i) {
+            if (!arrowsVisible) {
+                this.arrowSets[i].removeFromScene();
+            } else {
+                this.arrowSets[i].addToScene();
+            }
+        }
+        this.arrowsVisible = arrowsVisible;
+        if (this.arrowsVisible) {
+            
+        }
+    }
+};
+
+
+/**
+ * @constructor
+ */
+var BuildingCursorArrows = function(options) {
+    var defaults = {
+        color: 0xaaccff,
+        z: 0
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+
+    this.upArrowMesh = this.createArrowMesh();
+    this.downArrowMesh = this.createArrowMesh();
+    this.upArrowMesh.rotation.z = Math.PI * 0.5;
+    this.downArrowMesh.rotation.z = -Math.PI * 0.5;
+    this.upArrowMesh.position.y = 0.5;
+    this.downArrowMesh.position.y = -0.5;
+    
+    this.arrows = new THREE.Object3D();
+    this.arrows.add(this.upArrowMesh);
+    this.arrows.add(this.downArrowMesh);
+    this.arrows.position.z = this.z;
+    
+    this.initThreeSceneObject({
+        object: this.arrows,
+        scene: options.scene
+    });
+    this.addToScene();
+};
+
+BuildingCursorArrows.prototype = new ThreeSceneObject();
+
+BuildingCursorArrows.prototype.createArrowMesh = function() {
+    var shape = utilTHREE.createArrowShape(0.6, 0.4, 0.3, 0.2);
+    var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.1), new THREE.Vector3(0, 0, 0.1));
+    var extrudeSettings = {
+        steps: 1,
+        bevelEnabled: false,
+        extrudePath: line
+    };
+    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+    return new THREE.Mesh(geometry, BuildingCursor.material(this.color));
 };
 
 

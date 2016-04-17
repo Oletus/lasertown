@@ -26,6 +26,7 @@ utilTHREE.createUShape = function(faceSize, edgeSize, bottomEdgeSize) {
     var fs = faceSize / 2;
     var es = edgeSize;
     var bs = bottomEdgeSize;
+
     var shape = new THREE.Shape();
     shape.moveTo(-fs, -fs);
     shape.lineTo( fs, -fs);
@@ -35,6 +36,21 @@ utilTHREE.createUShape = function(faceSize, edgeSize, bottomEdgeSize) {
     shape.lineTo(-fs + es, -fs + bs);
     shape.lineTo(-fs + es,  fs);
     shape.lineTo(-fs,  fs);
+    return shape;
+};
+
+utilTHREE.createArrowShape = function(triWidth, triHeight, stemWidth, stemHeight) {
+    var tw = triWidth * 0.5;
+    var sw = stemWidth * 0.5;
+
+    var shape = new THREE.Shape();
+    shape.moveTo( tw, 0);
+    shape.lineTo( 0,  triHeight);
+    shape.lineTo(-tw, 0);
+    shape.lineTo(-sw, 0);
+    shape.lineTo(-sw, -stemHeight);
+    shape.lineTo( sw, -stemHeight);
+    shape.lineTo( sw, 0);
     return shape;
 };
 

@@ -292,8 +292,8 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         } else {
             this.chosenBuilding = null;
         }
-        this.updateChosenBuilding();
     }
+    this.updateChosenBuilding();
     this.lastCursorPosition = viewportPos;
 };
 
@@ -326,6 +326,7 @@ Level.prototype.updateChosenBuilding = function() {
         this.buildingCursor.gridX = this.chosenBuilding.gridX;
         this.buildingCursor.gridZ = this.chosenBuilding.gridZ;
         this.buildingCursor.addToScene();
+        this.buildingCursor.setArrowsVisible(this.mouseDownBuilding === null);
     }
 };
 
