@@ -27,6 +27,7 @@ Building.prototype.initBuilding = function(options) {
         this.blocks.push(this.constructBlockFromSpec(spec));
     }
     this.roof = new BuildingRoof({building: this, scene: this.scene, level: this.level});
+    this.roof.setStationary(this.stationary);
     this.updateRoof();
 };
 
@@ -269,9 +270,9 @@ BuildingRoof.prototype.updateModel = function() {
 
 BuildingRoof.prototype.getModel = function() {
     if (this.stationary) {
-        return BuildingRoof.model.clone();
-    } else {
         return BuildingRoof.stationaryModel.clone();
+    } else {
+        return BuildingRoof.model.clone();
     }
 };
 
@@ -364,9 +365,9 @@ BuildingBlock.prototype.updateModel = function() {
 
 BuildingBlock.prototype.getModel = function() {
     if (this.stationary) {
-        return this.getMovableModel().clone();
-    } else {
         return this.getStationaryModel().clone();
+    } else {
+        return this.getMovableModel().clone();
     }
 };
 
