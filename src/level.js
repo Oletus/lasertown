@@ -236,8 +236,11 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         }
     }
     if (this.mouseDownMoveCamera) {
-        var diff = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
-        this.cameraControl.zoom(diff);
+        var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
+        var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
+        this.cameraControl.zoom(diffY);
+        this.cameraControl.moveOrbitAngle(diffX);
+        console.log(diffX);
     } else if (this.mouseDownBuilding) {
         var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
         if (Game.parameters.get('roundedMovement')) {

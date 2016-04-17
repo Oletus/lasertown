@@ -11,9 +11,11 @@ var OrbitCameraControl = function(options) {
         zoomMovesY: true,
         y: 15,
         minY: 5,
-        maxY: 20,
+        maxY: 30,
         orbitDistance: 20,
         orbitAngle: 0,
+        minOrbitAngle: -Infinity,
+        maxOrbitAngle: Infinity,
         lookAt: new THREE.Vector3(0, 0, 0)
         /*minPolarAngle: 0, // distance from pole
         maxPolarAngle: Math.PI * 0.5*/
@@ -49,4 +51,14 @@ OrbitCameraControl.prototype.zoom = function(amount) {
 
 OrbitCameraControl.prototype.clampY = function() {
     this.y = mathUtil.clamp(this.minY, this.maxY, this.y);
+};
+
+OrbitCameraControl.prototype.moveOrbitAngle = function(amount) {
+    this.orbitAngle += amount * 0.1;
+    this.clampOrbitAngle();
+    this.updateCamera();
+};
+
+OrbitCameraControl.prototype.clampOrbitAngle = function() {
+    this.orbitAngle = mathUtil.clamp(this.minOrbitAngle, this.maxOrbitAngle, this.orbitAngle);
 };
