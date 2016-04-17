@@ -1,5 +1,7 @@
 'use strict';
 
+var MAX_BLOCKS = 7; // Includes base block
+
 var LevelEditor = function(level, scene) {
     this.level = level;
     this.scene = scene;
@@ -22,7 +24,7 @@ LevelEditor.prototype.zPress = function() {
 };
 
 LevelEditor.prototype.aPress = function() {
-    if (this.chosenY < 3) {
+    if (this.chosenY < MAX_BLOCKS - 2) {
         ++this.chosenY;
     }
 };
@@ -30,7 +32,7 @@ LevelEditor.prototype.aPress = function() {
 LevelEditor.prototype.getChosenBlock = function() {
     if (this.chosenBuilding) {
         var atLevel = this.chosenBuilding.getBlockAtLevel(this.chosenY + 0.5);
-        if (atLevel === null && this.chosenBuilding && this.chosenBuilding.blocks.length < 5 && this.chosenBuilding.topYTarget > this.chosenY - 0.5) {
+        if (atLevel === null && this.chosenBuilding && this.chosenBuilding.blocks.length < MAX_BLOCKS && this.chosenBuilding.topYTarget > this.chosenY - 0.5) {
             this.chosenBuilding.addBlockToTop({blockConstructor: StopBlock});
             ++this.chosenBuilding.topYTarget;
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
@@ -95,7 +97,7 @@ LevelEditor.prototype.xPress = function() {
 };
 
 LevelEditor.prototype.cPress = function() {
-    if (this.chosenBuilding && this.chosenBuilding.blocks.length < 5) {
+    if (this.chosenBuilding && this.chosenBuilding.blocks.length < MAX_BLOCKS) {
         this.chosenBuilding.addBlock({blockConstructor: StopBlock});
         this.chosenBuilding.topYTarget++;
     }
