@@ -176,7 +176,7 @@ Level.prototype.getLookAtCenter = function() {
 };
 
 Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x777777, specular: 0x222222 } );
-Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x222222 } );
+Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x111111 } );
 
 Level.prototype.createGroundTileMesh = function() {
     var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.2);
@@ -218,9 +218,13 @@ Level.prototype.setupGridGeometry = function() {
 
 Level.prototype.setupLights = function() {
     this.scene.add(new THREE.AmbientLight(0x222222));
-    var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0.5, 1, -1).normalize();
-    this.scene.add(directionalLight);
+    var mainLight = new THREE.DirectionalLight(0xccffff, 1);
+    mainLight.position.set(0.5, 1, -1).normalize();
+    this.scene.add(mainLight);
+    
+    var fillLight = new THREE.DirectionalLight(0x662244, 1);
+    fillLight.position.set(-1, 1, 1).normalize();
+    this.scene.add(fillLight);
 };
 
 Level.prototype.setCursorPosition = function(viewportPos) {

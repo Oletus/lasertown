@@ -267,11 +267,11 @@ BuildingBlock.prototype.setStationary = function(stationary) {
     });
 };
 
-BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xff88aa, specular: 0xffffff } );
-BuildingBlock.wallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xffbbdd, specular: 0xffffff } );
-BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0xffffff } );
-BuildingBlock.stationaryWallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xaaaaaa, specular: 0xffffff } );
-BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xffffff } );
+BuildingBlock.wallMaterial = new THREE.MeshPhongMaterial( { color: 0xff88aa, specular: 0x222222 } );
+BuildingBlock.wallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xffbbdd, specular: 0x222222 } );
+BuildingBlock.stationaryWallMaterial = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0x222222 } );
+BuildingBlock.stationaryWallMaterial2 = new THREE.MeshPhongMaterial( { color: 0xaaaaaa, specular: 0x222222 } );
+BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x888888 } );
 BuildingBlock.mirrorMaterial = new THREE.MeshPhongMaterial( { color: 0x2288ff, specular: 0xffffff } );
 BuildingBlock.mirrorMaterial.transparent = true;
 BuildingBlock.mirrorMaterial.opacity = 0.7;
