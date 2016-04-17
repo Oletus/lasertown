@@ -108,7 +108,8 @@ LevelEditor.prototype.qPress = function() {
 };
 
 LevelEditor.prototype.ctrlsPress = function() {
-    console.log(this.level.getSpec());
+    var blob = new Blob([this.level.getSpec()], {type: 'text/plain'});
+    saveAs(blob, 'level.txt');
 };
 
 LevelEditor.prototype.updateBuildingCursor = function() {
