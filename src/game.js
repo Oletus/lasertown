@@ -33,9 +33,12 @@ var Game = function(resizer, renderer) {
         this.input.addListener(undefined, ['ctrl+s'], this.ctrlsPress);
     }
     
+    this.levelNumber = 0;
+    
     var that = this;
     var initLevel = function() {
-        that.initLevel();
+        var levelId = levelData.levelSequence[that.levelNumber];
+        that.loadLevel(levelId);
     };
     utilTHREE.onAllLoaded(initLevel);
 };
@@ -105,13 +108,6 @@ Game.prototype.setCameraAspect = function(aspect) {
     }
 };
 
-Game.prototype.initLevel = function() {
-    var options = {
-        cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
-    };
-    this.level = Level.fromSpec(options, levelData['4']);
-};
-
 Game.prototype.render = function() {
     if (this.level) {
         this.level.render(this.renderer);
@@ -124,9 +120,26 @@ Game.prototype.update = function(deltaTime) {
 
     if (this.level) {
         this.level.update(deltaTime);
+        if (this.level.state.id === Level.State.SUCCESS && this.level.state.time > 2) {
+            this.nextLevel();
+        }
     }
     
     Audio.muteAll(Game.parameters.get('muteAudio'));
+};
+
+Game.prototype.loadLevel = function(id) {
+    var options = {
+        cameraAspect: this.resizer.canvas.width / this.resizer.canvas.height
+    };
+    this.level = Level.fromSpec(options, levelData.data[id]);
+};
+
+Game.prototype.nextLevel = function() {
+    ++this.levelNumber;
+    if (this.levelNumber < levelData.levelSequence.length) {
+        this.loadLevel(levelData.levelSequence[this.levelNumber]);
+    }
 };
 
 // Parameters added here can be tuned at run time when in developer mode

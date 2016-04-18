@@ -142,6 +142,7 @@ Level.prototype.gridLengthToWorld = function(gridLength) {
 };
 
 Level.prototype.update = function(deltaTime) {
+    this.state.update(deltaTime);
     for (var i = 0; i < this.objects.length; ++i) {
         this.objects[i].update(deltaTime);
     }
@@ -167,8 +168,10 @@ Level.prototype.getBuildingFromGrid = function(x, z) {
 Level.prototype.handleLaser = function(loc) {
     var building = this.getBuildingFromGrid(loc.x, loc.z);
     if (!building) {
-        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ) {
-            this.state.change(Level.State.SUCCESS);
+        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ && !this.mouseDownBuilding) {
+            if (this.state.id !== Level.State.SUCCESS) {
+                this.state.change(Level.State.SUCCESS);
+            }
         }
         return Laser.Handling.INFINITY;
     } else {
@@ -364,7 +367,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
 
 Level.prototype.mouseDown = function() {
     this.mouseDownCursorPosition = this.lastCursorPosition;
-    if (this.chosenBuilding !== null) {
+    if (this.chosenBuilding !== null && (this.state.id !== Level.State.SUCCESS || this.editor)) {
         if (!this.chosenBuilding.stationary) {
             this.mouseDownBuilding = this.chosenBuilding;
             this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
