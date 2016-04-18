@@ -15,8 +15,12 @@ var Level = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
     
     this.scene = new THREE.Scene();
-    this.interactiveScene = new THREE.Object3D();
-    this.scene.add(this.interactiveScene);
+    this.townParent = new THREE.Object3D();
+    this.scene.add(this.townParent);
+
+    this.interactiveTown = new THREE.Object3D();
+    this.townParent.add(this.interactiveTown);
+
     this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 500000 );
     this.raycaster = new THREE.Raycaster();
     
@@ -43,7 +47,7 @@ var Level = function(options) {
         for (var z = 0; z < rowSpec.length; ++z) {
             var building = Building.fromSpec({
                 level: this,
-                scene: this.interactiveScene,
+                sceneParent: this.interactiveTown,
                 gridX: x,
                 gridZ: z
             }, rowSpec[z]);
@@ -60,13 +64,13 @@ var Level = function(options) {
     
     this.laser = new Laser({
         level: this,
-        scene: this.scene
+        sceneParent: this.townParent
     });
     this.objects.push(this.laser);
     
     this.goal = new GoalBuilding({
         level: this,
-        scene: this.scene,
+        sceneParent: this.townParent,
         gridX: this.width,
         gridZ: 2
     });
@@ -77,7 +81,7 @@ var Level = function(options) {
     
     this.buildingCursor = new BuildingCursor({
         level: this,
-        scene: this.scene
+        sceneParent: this.townParent
     });
     this.objects.push(this.buildingCursor);
     this.updateChosenBuilding();
@@ -93,13 +97,13 @@ var Level = function(options) {
     this.movedChosenBuilding = false;
     this.mouseDownMoveCamera = false;
 
-    this.sign = new Level.Sign({scene: this.scene});
+    this.sign = new Level.Sign({sceneParent: this.scene});
     this.sign.setText('LASER TOWN');
     this.setupLights();
     //this.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.01 );
     
     if (DEV_MODE) {
-        this.editor = new LevelEditor(this, this.scene);
+        this.editor = new LevelEditor(this, this.townParent);
     }
 };
 
@@ -258,7 +262,7 @@ var GridTile = function(options) {
     
     this.initThreeSceneObject({
         object: gridMesh,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
     this.addToScene();
 };
@@ -305,7 +309,7 @@ Level.prototype.setupGrid = function() {
             var tile = new GridTile({
                 x: x,
                 z: z,
-                scene: this.interactiveScene
+                sceneParent: this.interactiveTown
             });
             this.objects.push(tile);
         }
@@ -330,7 +334,7 @@ Level.Sign = function(options) {
     this.parent.add(this.textParent);
     
     this.initThreeSceneObject({
-        scene: options.scene,
+        sceneParent: options.sceneParent,
         object: this.parent
     });
     
@@ -421,7 +425,7 @@ Level.prototype.setupLights = function() {
 
 Level.prototype.setCursorPosition = function(viewportPos) {
     this.raycaster.setFromCamera(viewportPos.clone(), this.camera);
-    var intersects = this.raycaster.intersectObjects(this.interactiveScene.children, true);
+    var intersects = this.raycaster.intersectObjects(this.interactiveTown.children, true);
     var mouseOverBuilding = null;
     if (intersects.length > 0) {
         var nearest = intersects[0];

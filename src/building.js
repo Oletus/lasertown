@@ -9,7 +9,7 @@ var Building = function() {
 Building.prototype.initBuilding = function(options) {
     var defaults = {
         level: null,
-        scene: null,
+        sceneParent: null,
         gridX: 0,
         gridZ: 0,
         blocksSpec: [], // Listed from top downwards
@@ -30,7 +30,7 @@ Building.prototype.initBuilding = function(options) {
     for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].updateModel();
     }
-    this.roof = new BuildingRoof({building: this, scene: this.scene, level: this.level});
+    this.roof = new BuildingRoof({building: this, sceneParent: this.sceneParent, level: this.level});
     this.roof.setStationary(this.stationary);
     this.updateRoof();
 };
@@ -103,7 +103,7 @@ Building.prototype.constructBlockFromSpec = function(spec) {
     var options = {
         level: this.level,
         building: this,
-        scene: this.scene,
+        sceneParent: this.sceneParent,
         stationary: this.stationary
     };
     for (var key in spec) {
@@ -223,15 +223,15 @@ var BuildingCursor = function(options) {
     this.arrowsVisible = true;
     if (this.arrows) {
         this.arrows = [];
-        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: false, scene: this.mesh, color: this.color}));
-        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: false, scene: this.mesh, color: this.color}));
-        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: true, scene: this.mesh, color: this.color}));
-        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: true, scene: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: false, sceneParent: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: false, sceneParent: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: true, sceneParent: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: true, sceneParent: this.mesh, color: this.color}));
     }
     
     this.initThreeSceneObject({
         object: this.origin,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
 };
     
@@ -318,7 +318,7 @@ var BuildingCursorArrow = function(options) {
     
     this.initThreeSceneObject({
         object: this.arrows,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
     this.addToScene();
 };
@@ -352,7 +352,7 @@ var BuildingRoof = function(options) {
     this.modelParent = new THREE.Object3D();
     this.initThreeSceneObject({
         object: this.modelParent,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
     this.updateModel();
 };
@@ -410,7 +410,7 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 
     this.initThreeSceneObject({
         object: this.origin,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
     this.addToScene();
 };

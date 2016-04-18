@@ -8,7 +8,7 @@ var ThreeSceneObject = function() {
 
 ThreeSceneObject.prototype.initThreeSceneObject = function(options) {
     var defaults = {
-        scene: null,
+        sceneParent: null,
         object: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
@@ -17,14 +17,14 @@ ThreeSceneObject.prototype.initThreeSceneObject = function(options) {
 
 ThreeSceneObject.prototype.addToScene = function() {
     if (!this._inScene) {
-        this.scene.add(this.object);
+        this.sceneParent.add(this.object);
         this._inScene = true;
     }
 };
 
 ThreeSceneObject.prototype.removeFromScene = function() {
     if (this._inScene) {
-        this.scene.remove(this.object);
+        this.sceneParent.remove(this.object);
         this._inScene = false;
     }
 };

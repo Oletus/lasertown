@@ -40,11 +40,11 @@ LaserSegmentLocation.prototype.getSceneLocation = function(level) {
 var Laser = function(options) {
     var defaults = {
         level: null,
-        scene: null
+        sceneParent: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.segments = [];
-    this.laserCannon = new LaserCannon({laser: this, scene: this.scene, level: this.level});
+    this.laserCannon = new LaserCannon({laser: this, sceneParent: this.sceneParent, level: this.level});
     this.state = new StateMachine({stateSet: Laser.State});
 };
 
@@ -190,7 +190,7 @@ Laser.prototype.ensureSegmentExists = function(i) {
     if (i >= this.segments.length) {
         this.segments.push(new LaserSegment({
             level: this.level,
-            scene: this.scene,
+            sceneParent: this.sceneParent,
             laser: this
         }));
     }
@@ -226,7 +226,7 @@ var LaserCannon = function(options) {
     
     this.initThreeSceneObject({
         object: this.origin,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
     
     this.addToScene();
@@ -270,7 +270,7 @@ var LaserSegment = function(options) {
     
     this.initThreeSceneObject({
         object: this.origin,
-        scene: options.scene
+        sceneParent: options.sceneParent
     });
 
     this.addToScene();

@@ -2,14 +2,14 @@
 
 var MAX_BLOCKS = 7; // Includes base block
 
-var LevelEditor = function(level, scene) {
+var LevelEditor = function(level, sceneParent) {
     this.level = level;
-    this.scene = scene;
+    this.sceneParent = sceneParent;
     this.chosenY = 0;
     
     this.buildingCursor = new BuildingCursor({
         level: this.level,
-        scene: this.scene,
+        sceneParent: this.sceneParent,
         color: 0xff0000,
         y: this.chosenY + 0.7,
         arrows: false
