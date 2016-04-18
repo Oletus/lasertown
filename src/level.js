@@ -248,17 +248,28 @@ Level.prototype.handleLaser = function(loc) {
     if (!building) {
         if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ &&
             loc.y < this.goal.topY && loc.y > 0 &&
-            !this.mouseDownBuilding)
+            !this.mouseDownBuilding &&
+            this.state.id !== Level.State.SUCCESS &&
+            this.allBuildingsCloseToTarget())
         {
-            if (this.state.id !== Level.State.SUCCESS) {
-                this.state.change(Level.State.SUCCESS);
-                this.sign.setText('SUCCESS!');
-            }
+            this.state.change(Level.State.SUCCESS);
+            this.sign.setText('SUCCESS!');
         }
         return Laser.Handling.INFINITY;
     } else {
         return building.handleLaser(loc);
     }
+};
+
+Level.prototype.allBuildingsCloseToTarget = function() {
+    for (var i = 0; i < this.objects.length; ++i) {
+        if (this.objects[i] instanceof Building) {
+            if (Math.abs(this.objects[i].topY - this.objects[i].topYTarget) > 0.1) {
+                return false;
+            }
+        }
+    }
+    return true;
 };
 
 Level.prototype.getLookAtCenter = function() {
