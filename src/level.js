@@ -172,6 +172,7 @@ Level.prototype.handleLaser = function(loc) {
         if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ && !this.mouseDownBuilding) {
             if (this.state.id !== Level.State.SUCCESS) {
                 this.state.change(Level.State.SUCCESS);
+                this.sign.setText('SUCCESS!');
             }
         }
         return Laser.Handling.INFINITY;
