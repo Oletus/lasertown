@@ -404,6 +404,11 @@ mathUtil.mix = function(a, b, f) {
     return a + f * (b - a);
 };
 
+mathUtil.mixSmooth = function(a, b, f) {
+   var f2 = (1 - Math.cos(f * Math.PI)) / 2;
+   return mathUtil.mix(a, b, f2);
+}
+
 /**
  * Modulus for floating point numbers.
  * @param {number} a Dividend

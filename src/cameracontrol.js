@@ -20,6 +20,12 @@ var OrbitCameraControl = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.updateCamera();
+    this.state = new StateMachine({stateSet: OrbitCameraControl.State, id: OrbitCameraControl.State.CONTROLLABLE});
+};
+
+OrbitCameraControl.State = {
+    ANIMATING: 0,
+    CONTROLLABLE: 1
 };
 
 OrbitCameraControl.prototype.updateCamera = function() {
@@ -37,6 +43,32 @@ OrbitCameraControl.prototype.updateCamera = function() {
  */
 OrbitCameraControl.prototype.setLookAt = function(lookAt) {
     this.lookAt = lookAt.clone();
+};
+
+OrbitCameraControl.prototype.update = function(deltaTime) {
+    this.state.update(deltaTime);
+    if (this.state.id === OrbitCameraControl.State.ANIMATING) {
+        var t = this.state.time / this.animationDuration;
+        if (t > 1) {
+            t = 1;
+            this.state.change(OrbitCameraControl.State.CONTROLLABLE);
+        }
+        this.orbitAngle = mathUtil.mixSmooth(this.startOrbitAngle, this.targetOrbitAngle, t);
+        this.y = mathUtil.mixSmooth(this.startY, this.targetY, t);
+        this.updateCamera();
+    }
+};
+
+OrbitCameraControl.prototype.animate = function(options) {
+    this.state.change(OrbitCameraControl.State.ANIMATING);
+    this.startOrbitAngle = this.orbitAngle;
+    this.startY = this.y;
+    var defaults = {
+        targetY: this.y,
+        targetOrbitAngle: this.orbitAngle,
+        animationDuration: 1
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
 };
 
 OrbitCameraControl.prototype.zoom = function(amount) {

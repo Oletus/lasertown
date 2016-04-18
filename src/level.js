@@ -71,7 +71,8 @@ var Level = function(options) {
         gridZ: 2
     });
     this.objects.push(this.goal);
-    this.state = new StateMachine({stateSet: Level.State, id: Level.State.IN_PROGRESS});
+    this.state = new StateMachine({stateSet: Level.State, id: Level.State.INTRO});
+    this.introState = new StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
     this.chosenBuilding = null;
     
     this.buildingCursor = new BuildingCursor({
@@ -84,7 +85,8 @@ var Level = function(options) {
     this.cameraControl = new OrbitCameraControl({
         camera: this.camera,
         lookAt: this.getLookAtCenter(),
-        orbitAngle: Math.PI * 0.34
+        y: 5,
+        orbitAngle: Math.PI * 0.9
     });
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
@@ -126,8 +128,15 @@ Level.prototype.getSpec = function() {
 };
 
 Level.State = {
-    IN_PROGRESS: 0,
-    SUCCESS: 1
+    INTRO: 0,
+    IN_PROGRESS: 1,
+    SUCCESS: 2
+};
+
+Level.IntroState = {
+    LAUNCH: 0,
+    CAMERA_ZOOM_OUT: 1,
+    FINISHED: 2
 };
 
 Level.prototype.gridXToWorld = function(gridX) {
@@ -144,12 +153,37 @@ Level.prototype.gridLengthToWorld = function(gridLength) {
 
 Level.prototype.update = function(deltaTime) {
     this.state.update(deltaTime);
+    if (this.state.id === Level.State.INTRO) {
+        if (this.updateIntro(deltaTime)) {
+            this.state.change(Level.State.IN_PROGRESS);
+        }
+    }
+    this.cameraControl.update(deltaTime);
     for (var i = 0; i < this.objects.length; ++i) {
         this.objects[i].update(deltaTime);
     }
     if (this.editor) {
         this.editor.update(deltaTime);
     }
+};
+
+Level.prototype.updateIntro = function(deltaTime) {
+    this.introState.update(deltaTime);
+    if (this.introState.id === Level.IntroState.LAUNCH) {
+        if (this.introState.time > 1.0) {
+            this.introState.change(Level.IntroState.CAMERA_ZOOM_OUT);
+            this.cameraControl.animate({
+                targetY: 15,
+                targetOrbitAngle: Math.PI * 0.34,
+                animationDuration: 1.5
+            });
+        }
+    } else if (this.introState.id === Level.IntroState.CAMERA_ZOOM_OUT) {
+        if (this.introState.time > 1.5) {
+            this.introState.change(Level.IntroState.FINISHED);
+        }
+    }
+    return (this.introState.id === Level.IntroState.FINISHED);
 };
 
 Level.prototype.render = function(renderer) {
@@ -370,7 +404,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
         }
     } else if (mouseOverBuilding !== this.chosenBuilding) {
-        if (mouseOverBuilding !== null) {
+        if (mouseOverBuilding !== null && this.state.id === Level.State.IN_PROGRESS) {
             if (!mouseOverBuilding.stationary || this.editor) {
                 this.chosenBuilding = mouseOverBuilding;
             } else {
@@ -385,6 +419,9 @@ Level.prototype.setCursorPosition = function(viewportPos) {
 };
 
 Level.prototype.mouseDown = function() {
+    if (this.state.id === Level.State.INTRO) {
+        return;
+    }
     this.mouseDownCursorPosition = this.lastCursorPosition;
     if (this.chosenBuilding !== null && (this.state.id !== Level.State.SUCCESS || this.editor)) {
         if (!this.chosenBuilding.stationary) {
@@ -398,6 +435,9 @@ Level.prototype.mouseDown = function() {
 };
 
 Level.prototype.mouseUp = function() {
+    if (this.state.id === Level.State.INTRO) {
+        return;
+    }
     if (this.mouseDownBuilding) {
         this.chosenBuilding.topYTarget = Math.round(this.chosenBuilding.topYTarget);
         this.chosenBuilding.clampY();
