@@ -504,11 +504,12 @@ Level.prototype.setCursorPosition = function(viewportPos) {
     }
     
     if (this.mouseDownMoveCamera) {
-        var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
-        var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
-        this.cameraControl.zoom(diffY);
-        //this.cameraControl.moveOrbitAngle(-diffX * Math.abs(this.mouseDownCursorPosition.y) * 2 * Math.sign(viewportPos.y));
-        this.cameraControl.moveOrbitAngle(diffX);
+        if (this.state.id !== Level.State.SUCCESS || this.editor) {
+            var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
+            var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
+            this.cameraControl.zoom(diffY);
+            this.cameraControl.moveOrbitAngle(diffX);
+        }
     } else if (this.mouseDownBuilding) {
         var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
         if (Game.parameters.get('roundedMovement')) {
