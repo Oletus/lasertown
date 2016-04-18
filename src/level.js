@@ -77,6 +77,7 @@ var Level = function(options) {
     this.objects.push(this.goal);
     this.state = new StateMachine({stateSet: Level.State, id: Level.State.INTRO});
     this.introState = new StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
+    this.successState = new StateMachine({stateSet: Level.SuccessState, id: Level.SuccessState.LAUNCH});
     this.chosenBuilding = null;
     
     this.buildingCursor = new BuildingCursor({
@@ -147,6 +148,11 @@ Level.IntroState = {
     FINISHED: 2
 };
 
+Level.SuccessState = {
+    LAUNCH: 0,
+    FADE_OUT: 1
+};
+
 Level.prototype.gridXToWorld = function(gridX) {
     return gridX * GRID_SPACING;
 };
@@ -184,7 +190,7 @@ Level.prototype.update = function(deltaTime) {
     if (this.editor) {
         this.editor.update(deltaTime);
     } else {
-        if (this.state.id === Level.State.SUCCESS) {
+        if (this.state.id === Level.State.SUCCESS && !this.editor) {
             this.updateSuccess(deltaTime);
         }
     }
@@ -214,7 +220,13 @@ Level.prototype.updateIntro = function(deltaTime) {
 };
 
 Level.prototype.updateSuccess = function(deltaTime) {
+    this.successState.update(deltaTime);
     this.townParent.position.y += deltaTime * this.state.time * 5;
+    if (this.successState.id === Level.SuccessState.LAUNCH) {
+        if (this.successState.time > 4.0) {
+            this.successState.change(Level.SuccessState.FADE_OUT);
+        }
+    }
 };
 
 Level.prototype.render = function(renderer) {

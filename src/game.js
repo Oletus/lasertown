@@ -111,6 +111,13 @@ Game.prototype.setCameraAspect = function(aspect) {
 
 Game.prototype.render = function() {
     if (this.level) {
+        var fadeOpacity = 0.0; // Conceptually opacity of black fader over the game
+        if (this.level.state.id === Level.State.INTRO) {
+            fadeOpacity = 1.0 - this.level.state.time;
+        } else if (this.level.state.id === Level.State.SUCCESS && this.level.successState.id === Level.SuccessState.FADE_OUT) {
+            fadeOpacity = this.level.successState.time;
+        }
+        this.resizer.canvas.style.opacity = mathUtil.clamp(0.0, 1.0, 1.0 - fadeOpacity);
         this.level.render(this.renderer);
     }
 };
@@ -121,7 +128,11 @@ Game.prototype.update = function(deltaTime) {
 
     if (this.level) {
         this.level.update(deltaTime);
-        if (this.level.state.id === Level.State.SUCCESS && this.level.state.time > 4 && !this.level.editor) {
+        if (this.level.state.id === Level.State.SUCCESS &&
+            this.level.successState.id === Level.SuccessState.FADE_OUT &&
+            this.level.successState.time > 1.0 && 
+            !this.level.editor)
+        {
             this.nextLevel();
         }
     }
