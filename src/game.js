@@ -31,6 +31,7 @@ var Game = function(resizer, renderer) {
         this.input.addListener(undefined, ['p'], this.pPress);
         this.input.addListener(undefined, ['q'], this.qPress);
         this.input.addListener(undefined, ['ctrl+s'], this.ctrlsPress);
+        this.input.addListener(undefined, ['ctrl+n'], this.nextLevelCycle);
     }
     
     this.levelNumber = 0;
@@ -140,6 +141,14 @@ Game.prototype.nextLevel = function() {
     if (this.levelNumber < levelData.levelSequence.length) {
         this.loadLevel(levelData.levelSequence[this.levelNumber]);
     }
+};
+
+// For dev mode
+Game.prototype.nextLevelCycle = function() {
+    if (this.levelNumber >= levelData.levelSequence.length - 1) {
+        this.levelNumber = -1;
+    }
+    this.nextLevel();
 };
 
 // Parameters added here can be tuned at run time when in developer mode
