@@ -176,6 +176,9 @@ Building.prototype.setStationary = function(stationary) {
 };
 
 Building.fromSpec = function(options, spec) {
+    if (spec === null) {
+        return null;
+    }
     var parsedSpec = parseSpec(spec);
     options.blocksSpec = parsedSpec.blocksSpec;
     options.stationary = parsedSpec.stationary;
@@ -195,7 +198,7 @@ Building.prototype.getSpec = function() {
     }
     spec += ']';
     spec += ', stationary: ' + this.stationary;
-    spec += ', topY: ' + this.topY;
+    spec += ', topY: ' + Math.round(this.topY);
     spec += '}';
     return spec;
 };
@@ -501,6 +504,10 @@ BuildingBlock.prototype.getSpec = function() {
         spec += 'HoleBlock';
     } else if (this instanceof PeriscopeBlock) {
         spec += 'PeriscopeBlock';
+    } else if (this instanceof GoalBlock) {
+        spec += 'GoalBlock';
+    } else if (this instanceof GoalPostBlock) {
+        spec += 'GoalPostBlock';
     }
     var specProps = this.specProperties();
     for (var i = 0; i < specProps.length; ++i) {

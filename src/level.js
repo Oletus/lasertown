@@ -39,6 +39,7 @@ var Level = function(options) {
     
     this.buildingGrid = [];
     
+    var hasGoal = false;
     for (var x = 0; x < this.buildingGridSpec.length; ++x) {
         var rowSpec = this.buildingGridSpec[x];
         this.buildingGrid.push([]);
@@ -50,13 +51,16 @@ var Level = function(options) {
                 gridZ: z
             }, rowSpec[z]);
 
-            this.objects.push(building);
+            if (building !== null) {
+                this.objects.push(building);
+                for (var i = 0; i < building.blocks.length; ++i) {
+                    if (building.blocks[i] instanceof GoalBlock) {
+                        hasGoal = true;
+                    }
+                }
+            }
             this.buildingGrid[x].push(building);
         }
-    }
-    this.buildingGrid.push([]); // Extra x row for goal
-    for (var i = 0; i < this.buildingGrid[0].length; ++i) {
-        this.buildingGrid[this.buildingGrid.length - 1].push(null);
     }
     
     this.laser = new Laser({
@@ -65,14 +69,20 @@ var Level = function(options) {
     });
     this.objects.push(this.laser);
     
-    var goal = new GoalBuilding({
-        level: this,
-        sceneParent: this.townParent,
-        gridX: this.width,
-        gridZ: 2
-    });
-    this.buildingGrid[goal.gridX][goal.gridZ] = goal;
-    this.objects.push(goal);
+    if (!hasGoal) {
+        this.buildingGrid.push([]); // Extra x row for goal
+        for (var i = 0; i < this.buildingGrid[0].length; ++i) {
+            this.buildingGrid[this.buildingGrid.length - 1].push(null);
+        }
+        var goal = new GoalBuilding({
+            level: this,
+            sceneParent: this.townParent,
+            gridX: this.buildingGridSpec.length,
+            gridZ: 2
+        });
+        this.buildingGrid[goal.gridX][goal.gridZ] = goal;
+        this.objects.push(goal);
+    }
     
     this.setupGrid();
 
@@ -122,7 +132,11 @@ Level.prototype.getSpec = function() {
         var row = this.buildingGrid[x];
         var rowSpec = '[';
         for (var z = 0; z < row.length; ++z) {
-            rowSpec += "'" + row[z].getSpec() + "'";
+            if (row[z] === null) {
+                rowSpec += "null";
+            } else {
+                rowSpec += "'" + row[z].getSpec() + "'";
+            }
             if (z < row.length - 1) {
                 rowSpec += ', '
             }
