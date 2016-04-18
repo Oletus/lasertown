@@ -89,6 +89,8 @@ var Level = function(options) {
         orbitAngle: Math.PI * 0.9
     });
     this.mouseDownBuilding = null;
+    this.sinceNudge = 0;
+    this.movedChosenBuilding = false;
     this.mouseDownMoveCamera = false;
 
     this.sign = new Level.Sign({scene: this.scene});
@@ -162,6 +164,15 @@ Level.prototype.update = function(deltaTime) {
     for (var i = 0; i < this.objects.length; ++i) {
         this.objects[i].update(deltaTime);
     }
+    
+    if (this.chosenBuilding !== null && !this.chosenBuilding.stationary) {
+        this.sinceNudge += deltaTime;
+        if (this.sinceNudge > 2.0 && !this.movedChosenBuilding) {
+            this.chosenBuilding.deltaY = 0.06 + Math.random() * 0.05;
+            this.sinceNudge = -Math.random() * 2.0;
+        }
+    }
+    
     if (this.editor) {
         this.editor.update(deltaTime);
     }
@@ -404,6 +415,9 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         if (Game.parameters.get('roundedMovement')) {
             steps = Math.round(steps);
         }
+        if (steps !== 0) {
+            this.movedChosenBuilding = true;
+        }
         this.chosenBuilding.topYTarget = this.mouseDownTopYTarget - steps;
         this.chosenBuilding.clampY();
         if (!Game.parameters.get('roundedMovement')) {
@@ -413,6 +427,8 @@ Level.prototype.setCursorPosition = function(viewportPos) {
         if (mouseOverBuilding !== null && (this.state.id === Level.State.IN_PROGRESS || this.editor)) {
             if (!mouseOverBuilding.stationary || this.editor) {
                 this.chosenBuilding = mouseOverBuilding;
+                this.movedChosenBuilding = false;
+                this.sinceNudge = 0;
             } else {
                 this.chosenBuilding = null;
             }
@@ -431,6 +447,7 @@ Level.prototype.mouseDown = function() {
     this.mouseDownCursorPosition = this.lastCursorPosition;
     if (this.chosenBuilding !== null && (this.state.id !== Level.State.SUCCESS || this.editor)) {
         if (!this.chosenBuilding.stationary) {
+            this.sinceNudge = 0;
             this.mouseDownBuilding = this.chosenBuilding;
             this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
             this.mouseDownMoveCamera = false;
