@@ -56,7 +56,8 @@ Laser.State = {
 Laser.Handling = {
     STOP: 0,
     CONTINUE: 1,
-    INFINITY: 2
+    INFINITY: 2,
+    GOAL: 3
 };
 
 Laser.Direction = {

@@ -61,6 +61,10 @@ var Level = function(options) {
             }
         }
     }
+    this.buildingGrid.push([]); // Extra x row for goal
+    for (var i = 0; i < this.buildingGrid[0].length; ++i) {
+        this.buildingGrid[this.buildingGrid.length - 1].push(null);
+    }
     
     this.laser = new Laser({
         level: this,
@@ -68,13 +72,15 @@ var Level = function(options) {
     });
     this.objects.push(this.laser);
     
-    this.goal = new GoalBuilding({
+    var goal = new GoalBuilding({
         level: this,
         sceneParent: this.townParent,
         gridX: this.width,
         gridZ: 2
     });
-    this.objects.push(this.goal);
+    this.buildingGrid[goal.gridX][goal.gridZ] = goal;
+    this.objects.push(goal);
+
     this.state = new StateMachine({stateSet: Level.State, id: Level.State.INTRO});
     this.introState = new StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
     this.successState = new StateMachine({stateSet: Level.SuccessState, id: Level.SuccessState.LAUNCH});
@@ -246,18 +252,20 @@ Level.prototype.getBuildingFromGrid = function(x, z) {
 Level.prototype.handleLaser = function(loc) {
     var building = this.getBuildingFromGrid(loc.x, loc.z);
     if (!building) {
-        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ &&
-            loc.y < this.goal.topY && loc.y > 0 &&
-            !this.mouseDownBuilding &&
-            this.state.id !== Level.State.SUCCESS &&
-            this.allBuildingsCloseToTarget())
-        {
-            this.state.change(Level.State.SUCCESS);
-            this.sign.setText('SUCCESS!');
-        }
         return Laser.Handling.INFINITY;
     } else {
-        return building.handleLaser(loc);
+        var handling = building.handleLaser(loc);
+        if (handling === Laser.Handling.GOAL) {
+            if (!this.mouseDownBuilding &&
+                this.state.id !== Level.State.SUCCESS &&
+                this.allBuildingsCloseToTarget())
+            {
+                this.state.change(Level.State.SUCCESS);
+                this.sign.setText('SUCCESS!');
+            }
+            handling = Laser.Handling.INFINITY;
+        }
+        return handling;
     }
 };
 

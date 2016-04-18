@@ -566,7 +566,7 @@ var GoalBlock = function(options) {
 GoalBlock.prototype = new BuildingBlock();
 
 GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
-    return Laser.Handling.INFINITY;
+    return Laser.Handling.GOAL;
 };
 
 GoalBlock.prototype.getModel = function() {
