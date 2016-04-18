@@ -120,6 +120,8 @@ var Level = function(options) {
     }
 };
 
+Level.completedSound = new Audio('laser_completed');
+
 Level.fromSpec = function(options, spec) {
     var parsedSpec = parseSpec(spec);
     options.buildingGridSpec = parsedSpec.buildingGridSpec;
@@ -271,6 +273,7 @@ Level.prototype.handleLaser = function(loc) {
             {
                 this.state.change(Level.State.SUCCESS);
                 this.sign.setText('SUCCESS!');
+                Level.completedSound.play();
             }
             handling = Laser.Handling.CONTINUE;
         }

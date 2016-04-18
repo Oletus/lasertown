@@ -125,7 +125,7 @@ Laser.inPath = function(path, segment) {
     return false;
 };
 
-Laser.startSound = new Audio('laser-start');
+Laser.startSound = new Audio('laser_fireup');
 
 Laser.prototype.update = function(deltaTime) {
     this.laserCannon.update(deltaTime);

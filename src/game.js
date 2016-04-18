@@ -41,9 +41,12 @@ var Game = function(resizer, renderer) {
     var initLevel = function() {
         var levelId = levelData.levelSequence[that.levelNumber];
         that.loadLevel(levelId);
+        Game.music.playSingular(true);
     };
     utilTHREE.onAllLoaded(initLevel);
 };
+
+Game.music = new Audio('laser_music');
 
 Game.prototype.zPress = function() {
     this.level.editor.zPress();
