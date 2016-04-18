@@ -157,9 +157,9 @@ Building.prototype.updateRoof = function() {
     }
     if (this.hasGoal()) {
         this.addGoalIndicator();
-    } /*else {
+    } else {
         this.removeGoalIndicator();
-    }*/
+    }
 };
 
 Building.prototype.addGoalIndicator = function() {
