@@ -89,7 +89,8 @@ var Level = function(options) {
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
 
-    this.setupLaserTownText();
+    this.sign = new Level.Sign({scene: this.scene});
+    this.sign.setText('LASER TOWN');
     this.setupLights();
     
     if (DEV_MODE) {
@@ -258,30 +259,47 @@ Level.prototype.setupGrid = function() {
     }
 };
 
-Level.prototype.setupLaserTownText = function() {
-    var textGeo = new THREE.TextGeometry( 'LASER TOWN', {
-        font: Level.font,
-        size: 2,
-        height: 0.2,
-        curveSegments: 3,
-        bevelEnabled: false,
-    });
-    var material = new THREE.MeshPhongMaterial( { color: 0x333333, specular: 0x222222 } );
-    var textMesh = new THREE.Mesh( textGeo, material );
-    
+/**
+ * @constructor
+ */
+Level.Sign = function(options) {
     var box = new THREE.BoxGeometry(15, 3, 0.1);
     var boxMesh = new THREE.Mesh(box, BuildingBlock.goalMaterial);
     
-    var textParent = new THREE.Object3D();
-    textParent.position.x = 6;
-    textParent.position.y = 3;
-    textParent.position.z = -2;
-    textParent.add(textMesh);
-    textMesh.position.x = -6.5;
-    textMesh.position.y = -1;
-    textParent.add(boxMesh);
+    this.parent = new THREE.Object3D();
+    this.parent.position.x = 6;
+    this.parent.position.y = 3;
+    this.parent.position.z = -2;
+    this.parent.add(boxMesh);
     
-    this.scene.add(textParent);
+    this.textParent = new THREE.Object3D();
+    this.parent.add(this.textParent);
+    
+    this.initThreeSceneObject({
+        scene: options.scene,
+        object: this.parent
+    });
+    
+    this.addToScene();
+};
+
+Level.Sign.prototype = new ThreeSceneObject();
+
+Level.Sign.prototype.setText = function(text) {
+    var textGeo = new THREE.TextGeometry( text, {
+        font: Level.font,
+        size: 2,
+        height: 0.1,
+        curveSegments: 3,
+        bevelEnabled: false,
+    });
+    textGeo.center();
+    var material = new THREE.MeshPhongMaterial( { color: 0x333333, specular: 0x222222 } );
+    var textMesh = new THREE.Mesh( textGeo, material );
+    textMesh.position.z = 0.1;
+    
+    this.textParent.children = [];
+    this.textParent.add(textMesh);
 };
 
 Level.prototype.setupLights = function() {
