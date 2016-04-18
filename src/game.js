@@ -120,7 +120,7 @@ Game.prototype.update = function(deltaTime) {
 
     if (this.level) {
         this.level.update(deltaTime);
-        if (this.level.state.id === Level.State.SUCCESS && this.level.state.time > 2) {
+        if (this.level.state.id === Level.State.SUCCESS && this.level.state.time > 2 && !this.level.editor) {
             this.nextLevel();
         }
     }

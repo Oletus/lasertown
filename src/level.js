@@ -410,7 +410,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
         }
     } else if (mouseOverBuilding !== this.chosenBuilding) {
-        if (mouseOverBuilding !== null && this.state.id === Level.State.IN_PROGRESS) {
+        if (mouseOverBuilding !== null && (this.state.id === Level.State.IN_PROGRESS || this.editor)) {
             if (!mouseOverBuilding.stationary || this.editor) {
                 this.chosenBuilding = mouseOverBuilding;
             } else {
