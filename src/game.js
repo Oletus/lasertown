@@ -26,6 +26,7 @@ var Game = function(resizer, renderer) {
         this.input.addListener(undefined, ['x'], this.xPress);
         this.input.addListener(undefined, ['c'], this.cPress);
         this.input.addListener(undefined, ['o'], this.oPress);
+        this.input.addListener(undefined, ['l'], this.lPress);
         this.input.addListener(undefined, ['k'], this.kPress);
         this.input.addListener(undefined, ['m'], this.mPress);
         this.input.addListener(undefined, ['p'], this.pPress);
@@ -70,6 +71,9 @@ Game.prototype.xPress = function() {
 };
 Game.prototype.qPress = function() {
     this.level.editor.qPress();
+};
+Game.prototype.lPress = function() {
+    this.level.editor.lPress();
 };
 Game.prototype.ctrlsPress = function() {
     this.level.editor.ctrlsPress();

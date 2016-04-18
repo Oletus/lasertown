@@ -110,6 +110,19 @@ LevelEditor.prototype.qPress = function() {
     }
 };
 
+LevelEditor.prototype.lPress = function() {
+    var block = this.getChosenBlock();
+    if (block !== null) {
+        var top = block.topY === this.chosenBuilding.topY;
+        var goalConstructor = top ? GoalBlock : GoalPostBlock;
+        var dir = true;
+        if (block instanceof goalConstructor) {
+            dir = !block.goalDirection;
+        }
+        this.chosenBuilding.replaceBlockSpec(block, {blockConstructor: goalConstructor, goalDirection: dir});
+    }
+};
+
 LevelEditor.prototype.ctrlsPress = function() {
     var blob = new Blob([this.level.getSpec()], {type: 'text/plain'});
     saveAs(blob, 'level.txt');
