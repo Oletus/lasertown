@@ -566,7 +566,23 @@ var GoalBlock = function(options) {
 GoalBlock.prototype = new BuildingBlock();
 
 GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
-    return Laser.Handling.GOAL;
+    var zLaser = (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z || laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z);
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+        return Laser.Handling.CONTINUE;
+    }
+    if (this.goalDirection) {
+        if (zLaser) {
+            return Laser.Handling.STOP;
+        } else {
+            return Laser.Handling.GOAL;
+        }
+    } else {
+        if (zLaser) {
+            return Laser.Handling.GOAL;
+        } else {
+            return Laser.Handling.STOP;
+        }
+    }
 };
 
 GoalBlock.prototype.getModel = function() {
@@ -602,7 +618,23 @@ var GoalPostBlock = function(options) {
 GoalPostBlock.prototype = new BuildingBlock();
 
 GoalPostBlock.prototype.handleLaser = function(laserSegmentLoc) {
-    return Laser.Handling.INFINITY;
+    var zLaser = (laserSegmentLoc.direction === Laser.Direction.POSITIVE_Z || laserSegmentLoc.direction === Laser.Direction.NEGATIVE_Z);
+    if (Laser.isVerticalDirection(laserSegmentLoc.direction)) {
+        return Laser.Handling.CONTINUE;
+    }
+    if (this.goalDirection) {
+        if (zLaser) {
+            return Laser.Handling.STOP;
+        } else {
+            return Laser.Handling.GOAL;
+        }
+    } else {
+        if (zLaser) {
+            return Laser.Handling.GOAL;
+        } else {
+            return Laser.Handling.STOP;
+        }
+    }
 };
 
 GoalPostBlock.prototype.createObject3D = function() {

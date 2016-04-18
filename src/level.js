@@ -263,7 +263,7 @@ Level.prototype.handleLaser = function(loc) {
                 this.state.change(Level.State.SUCCESS);
                 this.sign.setText('SUCCESS!');
             }
-            handling = Laser.Handling.INFINITY;
+            handling = Laser.Handling.CONTINUE;
         }
         return handling;
     }
