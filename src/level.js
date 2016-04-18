@@ -406,7 +406,7 @@ Level.Sign.prototype.setText = function(text) {
         font: Level.font,
         size: 2,
         height: 0.1,
-        curveSegments: 3,
+        curveSegments: 1,
         bevelEnabled: false,
     });
     textGeo.center();
@@ -423,7 +423,7 @@ Level.Sign.prototype.setSecondaryText = function(text) {
         font: Level.font,
         size: 0.35,
         height: 0.05,
-        curveSegments: 3,
+        curveSegments: 1,
         bevelEnabled: false,
     });
     textGeo.center();

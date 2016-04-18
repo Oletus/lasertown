@@ -251,7 +251,7 @@ Building.GoalIndicator = function(options) {
         font: Level.font,
         size: 0.8,
         height: 0.3,
-        curveSegments: 3,
+        curveSegments: 1,
         bevelEnabled: false,
     });
     textGeo.center();
