@@ -17,7 +17,7 @@ var Level = function(options) {
     this.scene = new THREE.Scene();
     this.interactiveScene = new THREE.Object3D();
     this.scene.add(this.interactiveScene);
-    this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 10000 );
+    this.camera = new THREE.PerspectiveCamera( 40, this.cameraAspect, 1, 500000 );
     this.raycaster = new THREE.Raycaster();
     
     this.objects = [];
@@ -96,6 +96,7 @@ var Level = function(options) {
     this.sign = new Level.Sign({scene: this.scene});
     this.sign.setText('LASER TOWN');
     this.setupLights();
+    //this.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.01 );
     
     if (DEV_MODE) {
         this.editor = new LevelEditor(this, this.scene);
@@ -386,6 +387,17 @@ Level.prototype.setupLights = function() {
     var fillLight = new THREE.DirectionalLight(0x333355, 1);
     fillLight.position.set(-1, 1, 1).normalize();
     this.scene.add(fillLight);
+    
+    this.sky = new THREE.Sky();
+    this.scene.add(this.sky.mesh);
+    var uniforms = this.sky.uniforms;
+    uniforms.turbidity.value = 10;
+    uniforms.reileigh.value = 1.3;
+    uniforms.luminance.value = 1;
+    uniforms.mieCoefficient.value = 0.052;
+    uniforms.mieDirectionalG.value = 0.83;
+    uniforms.sunPosition.value.copy(mainLight.position);
+    uniforms.sunPosition.value.y *= 0.4;
 };
 
 Level.prototype.setCursorPosition = function(viewportPos) {
