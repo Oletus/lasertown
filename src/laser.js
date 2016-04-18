@@ -29,6 +29,10 @@ LaserSegmentLocation.prototype.equals = function(other) {
            this.direction === other.direction;
 };
 
+LaserSegmentLocation.prototype.getSceneLocation = function(level) {
+    return new THREE.Vector3(level.gridXToWorld(this.x), this.y, level.gridZToWorld(this.z));
+};
+
 
 /**
  * @constructor
@@ -40,8 +44,13 @@ var Laser = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.segments = [];
-    this.ensureSegmentExists(0);
-    this.laserCannon = new LaserCannon({laser: this, scene: this.scene});
+    this.laserCannon = new LaserCannon({laser: this, scene: this.scene, level: this.level});
+    this.state = new StateMachine({stateSet: Laser.State});
+};
+
+Laser.State = {
+    OFF: 0,
+    ON: 1
 };
 
 Laser.Handling = {
@@ -116,6 +125,17 @@ Laser.inPath = function(path, segment) {
 };
 
 Laser.prototype.update = function(deltaTime) {
+    this.laserCannon.update(deltaTime);
+    if (this.state.id === Laser.State.OFF) {
+        this.pruneSegments(0);
+    } else if (this.state.id === Laser.State.ON) {
+        this.ensureSegmentExists(0);
+        this.segments[0].loc = this.laserCannon.loc.copy();
+    }
+    
+    if (this.segments.length === 0) {
+        return;
+    }
     var segmentIndex = 0;
     var loc = this.segments[segmentIndex].loc.copy();
 
@@ -157,7 +177,6 @@ Laser.prototype.update = function(deltaTime) {
     for (var i = 0; i < this.segments.length; ++i) {
         this.segments[i].update(deltaTime);
     }
-    this.laserCannon.update(deltaTime);
 };
 
 Laser.prototype.ensureSegmentExists = function(i) {
@@ -184,7 +203,8 @@ Laser.prototype.pruneSegments = function(startFrom) {
  */
 var LaserCannon = function(options) {
     var defaults = {
-        laser: null
+        laser: null,
+        level: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
@@ -194,6 +214,8 @@ var LaserCannon = function(options) {
     
     this.origin = new THREE.Object3D();
     this.origin.add(this.mesh);
+    
+    this.loc = new LaserSegmentLocation({});
     
     this.initThreeSceneObject({
         object: this.origin,
@@ -208,9 +230,8 @@ LaserCannon.prototype = new ThreeSceneObject();
 LaserCannon.model = null;
 
 LaserCannon.prototype.update = function(deltaTime) {
-    this.origin.position.x = this.laser.segments[0].origin.position.x;
-    this.origin.position.y = this.laser.segments[0].origin.position.y;
-    this.origin.position.z = this.laser.segments[0].origin.position.z;
+    var originPos = this.loc.getSceneLocation(this.level);
+    this.origin.position.set(originPos.x, originPos.y, originPos.z);
 };
 
 /**
@@ -263,9 +284,8 @@ LaserSegment.innerMaterial = (function() {
 })();
 
 LaserSegment.prototype.update = function(deltaTime) {
-    this.origin.position.y = this.loc.y;
-    this.origin.position.x = this.level.gridXToWorld(this.loc.x);
-    this.origin.position.z = this.level.gridZToWorld(this.loc.z);
+    var originPos = this.loc.getSceneLocation(this.level);
+    this.origin.position.set(originPos.x, originPos.y, originPos.z);
     this.origin.rotation.x = 0;
     this.origin.rotation.y = 0;
     switch (this.loc.direction) {

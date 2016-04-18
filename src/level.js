@@ -171,6 +171,9 @@ Level.prototype.updateIntro = function(deltaTime) {
     this.introState.update(deltaTime);
     if (this.introState.id === Level.IntroState.LAUNCH) {
         if (this.introState.time > 1.0) {
+            this.laser.state.change(Laser.State.ON);
+        }
+        if (this.introState.time > 1.5) {
             this.introState.change(Level.IntroState.CAMERA_ZOOM_OUT);
             this.cameraControl.animate({
                 targetY: 15,
