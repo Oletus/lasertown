@@ -132,6 +132,7 @@ Building.prototype.replaceBlockSpec = function(blockToReplace, spec) {
     var ind = this.blocks.indexOf(blockToReplace);
     blockToReplace.removeFromScene();
     this.blocks[ind] = this.constructBlockFromSpec(spec);
+    this.blocks[ind].updateModel();
     this.updateRoof();
 };
 
