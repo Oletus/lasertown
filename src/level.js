@@ -37,8 +37,6 @@ var Level = function(options) {
         }
     }
     
-    this.setupGrid();
-    
     this.buildingGrid = [];
     
     for (var x = 0; x < this.buildingGridSpec.length; ++x) {
@@ -54,11 +52,6 @@ var Level = function(options) {
 
             this.objects.push(building);
             this.buildingGrid[x].push(building);
-            for (var i = 0; i < this.objects.length; ++i) {
-                if (this.objects[i] instanceof GridTile && this.objects[i].x === x && this.objects[i].z === z) {
-                    this.objects[i].building = building;
-                }
-            }
         }
     }
     this.buildingGrid.push([]); // Extra x row for goal
@@ -80,6 +73,8 @@ var Level = function(options) {
     });
     this.buildingGrid[goal.gridX][goal.gridZ] = goal;
     this.objects.push(goal);
+    
+    this.setupGrid();
 
     this.state = new StateMachine({stateSet: Level.State, id: Level.State.INTRO});
     this.introState = new StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
@@ -294,10 +289,10 @@ Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specula
 var GridTile = function(options) {
     var defaults = {
         z: 0,
-        x: 0
+        x: 0,
+        building: null
     };
     objectUtil.initWithDefaults(this, defaults, options);
-    this.building = null;
     
     var gridMesh = this.createGroundTileMesh();
     gridMesh.position.x = this.x * GRID_SPACING;
@@ -346,13 +341,14 @@ GridTile.prototype.getOwnQueryObject = function() {
     return this.sidewalk;
 };
 
-Level.prototype.setupGrid = function() {    
-    for (var x = 0; x < this.buildingGridSpec.length; ++x) {
-        for (var z = 0; z < this.buildingGridSpec[0].length; ++z) {
+Level.prototype.setupGrid = function() {
+    for (var i = 0; i < this.objects.length; ++i) {
+        if (this.objects[i] instanceof Building) {
             var tile = new GridTile({
-                x: x,
-                z: z,
-                sceneParent: this.interactiveTown
+                x: this.objects[i].gridX,
+                z: this.objects[i].gridZ,
+                sceneParent: this.interactiveTown,
+                building: this.objects[i]
             });
             this.objects.push(tile);
         }
