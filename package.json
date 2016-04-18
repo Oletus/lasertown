@@ -1,8 +1,8 @@
 {
-  "name": "gameutils.js",
-  "version": "0.7.0",
-  "description": "Gameutils.js helper library",
-  "repository": "https://github.com/Oletus/gameutils.js.git",
+  "name": "Laser Town",
+  "version": "0.1.0",
+  "description": "Laser Town game",
+  "repository": "https://github.com/Oletus/lasertown.git",
   "license": "MIT",
   "dependencies": {
     "howler": "^1.1.28",
