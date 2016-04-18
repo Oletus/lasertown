@@ -471,7 +471,7 @@ Level.prototype.mouseUp = function() {
 };
 
 Level.prototype.updateChosenBuilding = function() {
-    if (this.chosenBuilding === null) {
+    if (this.chosenBuilding === null || this.chosenBuilding.stationary) {
         this.buildingCursor.removeFromScene();
     } else {
         this.buildingCursor.gridX = this.chosenBuilding.gridX;
