@@ -60,6 +60,11 @@ utilTHREE.createArrowShape = function(triWidth, triHeight, stemWidth, stemHeight
 utilTHREE.modelsPath = 'assets/models/';
 
 /**
+ * Path to load fonts from.
+ */
+utilTHREE.fontsPath = 'assets/fonts/';
+
+/**
  * How many models have been created.
  */
 utilTHREE.createdCount = 0;
@@ -112,6 +117,17 @@ utilTHREE.loadMTLOBJ = function(objFilename, mtlFilename, objectCallback) {
             loadObj();
         });
     }
+};
+
+utilTHREE.loadFont = function(fontName, objectCallback) {
+    var loader = new THREE.FontLoader();
+
+    ++utilTHREE.createdCount;
+
+    loader.load(utilTHREE.fontsPath + fontName + '.js', function ( response ) {
+        objectCallback(response);
+        ++utilTHREE.loadedCount;
+    });
 };
 
 utilTHREE.onAllLoaded = function(callback) {

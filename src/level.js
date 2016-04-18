@@ -88,7 +88,8 @@ var Level = function(options) {
     });
     this.mouseDownBuilding = null;
     this.mouseDownMoveCamera = false;
-    
+
+    this.setupLaserTownText();
     this.setupLights();
     
     if (DEV_MODE) {
@@ -254,6 +255,32 @@ Level.prototype.setupGrid = function() {
     }
 };
 
+Level.prototype.setupLaserTownText = function() {
+    var textGeo = new THREE.TextGeometry( 'LASER TOWN', {
+        font: Level.font,
+        size: 2,
+        height: 0.2,
+        curveSegments: 3,
+        bevelEnabled: false,
+    });
+    var material = new THREE.MeshPhongMaterial( { color: 0x333333, specular: 0x222222 } );
+    var textMesh = new THREE.Mesh( textGeo, material );
+    
+    var box = new THREE.BoxGeometry(15, 3, 0.1);
+    var boxMesh = new THREE.Mesh(box, BuildingBlock.goalMaterial);
+    
+    var textParent = new THREE.Object3D();
+    textParent.position.x = 6;
+    textParent.position.y = 3;
+    textParent.position.z = -2;
+    textParent.add(textMesh);
+    textMesh.position.x = -6.5;
+    textMesh.position.y = -1;
+    textParent.add(boxMesh);
+    
+    this.scene.add(textParent);
+};
+
 Level.prototype.setupLights = function() {
     this.scene.add(new THREE.AmbientLight(0x222222));
     var mainLight = new THREE.DirectionalLight(0xaaa588, 1);
@@ -380,3 +407,13 @@ Level.prototype.downPress = function() {
         this.chosenBuilding.downPress();
     }
 };
+
+Level.font = null;
+
+Level.loadAssets = function() {
+    utilTHREE.loadFont('aldo_the_apache_regular', function(font) {
+        Level.font = font;
+    });
+};
+
+Level.loadAssets();
