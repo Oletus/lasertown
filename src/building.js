@@ -34,10 +34,34 @@ Building.prototype.initBuilding = function(options) {
     this.roof.setStationary(this.stationary);
     this.goalIndicator = null;
     this.updateRoof();
+    this.requestedPlaySound = false;
+    this.movedSinceStill = 0.0;
+    this.timeSinceSound = 0.0;
+    this.timeStill = 0.0;
 };
+
+Building.moveSound = new Audio('building_move');
 
 Building.prototype.update = function(deltaTime) {
     this.deltaY = (this.deltaY + (this.topYTarget - this.topY) * Game.parameters.get('buildingSpringStrength')) * Game.parameters.get('buildingSpringDamping');
+    if (Math.abs(this.deltaY) < 0.005) {
+        this.timeStill += deltaTime;
+        if (this.timeStill > 0.1 && this.timeSinceSound > 0.5) {
+            if (Game.parameters.get('playBuildingMoveSound')) {
+                this.requestedPlaySound = true;
+            }
+        }
+        this.movedSinceStill = 0.0;
+    } else {
+        this.timeStill = 0.0;
+        this.movedSinceStill += Math.abs(this.deltaY);
+    }
+    this.timeSinceSound += deltaTime;
+    if (this.requestedPlaySound && this.movedSinceStill > 0.2) {
+        Building.moveSound.play();
+        this.timeSinceSound = 0.0;
+        this.requestedPlaySound = false;
+    }
     this.topY += this.deltaY;
     //this.topY = towardsValue(this.topY, this.topYTarget, deltaTime * 7);
     for (var i = 0; i < this.blocks.length; ++i) {

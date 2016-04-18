@@ -172,6 +172,7 @@ Game.prototype.nextLevelCycle = function() {
 // Parameters added here can be tuned at run time when in developer mode
 Game.parameters = new GameParameters({
     'roundedMovement': {initial: true},
+    'playBuildingMoveSound': {initial: false},
     'buildingSpringStrength': {initial: 0.1, min: 0.01, max: 0.2},
     'buildingSpringDamping': {initial: 0.77, min: 0.5, max: 0.95},
     'muteAudio': {initial: false}
