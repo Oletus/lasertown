@@ -316,7 +316,7 @@ Level.prototype.setupGrid = function() {
  * @constructor
  */
 Level.Sign = function(options) {
-    var box = new THREE.BoxGeometry(15, 3, 0.1);
+    var box = new THREE.BoxGeometry(15, 3.3, 0.1);
     var boxMesh = new THREE.Mesh(box, BuildingBlock.goalMaterial);
     
     this.parent = new THREE.Object3D();
@@ -326,12 +326,15 @@ Level.Sign = function(options) {
     this.parent.add(boxMesh);
     
     this.textParent = new THREE.Object3D();
+    this.textParent.position.y = 0.3;
     this.parent.add(this.textParent);
     
     this.initThreeSceneObject({
         scene: options.scene,
         object: this.parent
     });
+    
+    this.setSecondaryText('LD35 GAME BY OLLI ETUAHO, VALTTERI HEINONEN AND ANASTASIA DIATLOVA');
     
     this.addToScene();
 };
@@ -353,6 +356,22 @@ Level.Sign.prototype.setText = function(text) {
     
     this.textParent.children = [];
     this.textParent.add(textMesh);
+};
+
+Level.Sign.prototype.setSecondaryText = function(text) {
+    var textGeo = new THREE.TextGeometry( text, {
+        font: Level.font,
+        size: 0.35,
+        height: 0.05,
+        curveSegments: 3,
+        bevelEnabled: false,
+    });
+    textGeo.center();
+    var material = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0x222222 } );
+    var textMesh = new THREE.Mesh( textGeo, material );
+    textMesh.position.z = 0.05;
+    textMesh.position.y = -1.2;
+    this.parent.add(textMesh);
 };
 
 Level.prototype.setupLights = function() {
