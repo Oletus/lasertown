@@ -477,7 +477,15 @@ Level.prototype.updateChosenBuilding = function() {
         this.buildingCursor.gridX = this.chosenBuilding.gridX;
         this.buildingCursor.gridZ = this.chosenBuilding.gridZ;
         this.buildingCursor.addToScene();
-        this.buildingCursor.setArrowsVisible(this.mouseDownBuilding === null);
+        
+        var upArrows = false;
+        var downArrows = false;
+        if (this.mouseDownBuilding === null)
+        {
+            upArrows = (this.chosenBuilding.topYTarget < this.chosenBuilding.getMaxTopY());
+            downArrows = (this.chosenBuilding.topYTarget > 0);
+        }
+        this.buildingCursor.setArrowsVisible(upArrows, downArrows);
     }
 };
 

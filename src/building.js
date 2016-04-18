@@ -62,9 +62,13 @@ Building.prototype.downPress = function() {
     this.clampY();
 };
 
+Building.prototype.getMaxTopY = function() {
+    return this.blocks.length - 1;
+};
+
 Building.prototype.clampY = function() {
-    if (this.topYTarget > this.blocks.length - 1) {
-        this.topYTarget = this.blocks.length - 1;
+    if (this.topYTarget > this.getMaxTopY()) {
+        this.topYTarget = this.getMaxTopY();
     }
     if (this.topYTarget < 0) {
         this.topYTarget = 0;
@@ -218,9 +222,11 @@ var BuildingCursor = function(options) {
     
     this.arrowsVisible = true;
     if (this.arrows) {
-        this.arrowSets = [];
-        this.arrowSets.push(new BuildingCursorArrows({z: 0.85, scene: this.mesh, color: this.color}));
-        this.arrowSets.push(new BuildingCursorArrows({z: -0.85, scene: this.mesh, color: this.color}));
+        this.arrows = [];
+        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: false, scene: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: false, scene: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: 0.85, down: true, scene: this.mesh, color: this.color}));
+        this.arrows.push(new BuildingCursorArrow({z: -0.85, down: true, scene: this.mesh, color: this.color}));
     }
     
     this.initThreeSceneObject({
@@ -258,19 +264,30 @@ BuildingCursor.prototype.createMesh = function() {
     return new THREE.Mesh(geometry, BuildingCursor.material(this.color));
 };
 
-BuildingCursor.prototype.setArrowsVisible = function(arrowsVisible) {
-    if (this.arrowsVisible !== arrowsVisible) {
-        for (var i = 0; i < this.arrowSets.length; ++i) {
-            if (!arrowsVisible) {
-                this.arrowSets[i].removeFromScene();
-            } else {
-                this.arrowSets[i].addToScene();
+BuildingCursor.prototype.setArrowsVisible = function(upArrowsVisible, downArrowsVisible) {
+    if (this.upArrowsVisible !== upArrowsVisible) {
+        for (var i = 0; i < this.arrows.length; ++i) {
+            if (!this.arrows[i].down) {
+                if (!upArrowsVisible) {
+                    this.arrows[i].removeFromScene();
+                } else {
+                    this.arrows[i].addToScene();
+                }
             }
         }
-        this.arrowsVisible = arrowsVisible;
-        if (this.arrowsVisible) {
-            
+        this.upArrowsVisible = upArrowsVisible;
+    }
+    if (this.downArrowsVisible !== downArrowsVisible) {
+        for (var i = 0; i < this.arrows.length; ++i) {
+            if (this.arrows[i].down) {
+                if (!downArrowsVisible) {
+                    this.arrows[i].removeFromScene();
+                } else {
+                    this.arrows[i].addToScene();
+                }
+            }
         }
+        this.downArrowsVisible = downArrowsVisible;
     }
 };
 
@@ -278,23 +295,25 @@ BuildingCursor.prototype.setArrowsVisible = function(arrowsVisible) {
 /**
  * @constructor
  */
-var BuildingCursorArrows = function(options) {
+var BuildingCursorArrow = function(options) {
     var defaults = {
         color: 0xaaccff,
-        z: 0
+        z: 0,
+        down: false
     };
     objectUtil.initWithDefaults(this, defaults, options);
 
-    this.upArrowMesh = this.createArrowMesh();
-    this.downArrowMesh = this.createArrowMesh();
-    this.upArrowMesh.rotation.z = Math.PI * 0.5;
-    this.downArrowMesh.rotation.z = -Math.PI * 0.5;
-    this.upArrowMesh.position.y = 0.5;
-    this.downArrowMesh.position.y = -0.5;
+    this.arrowMesh = this.createArrowMesh();
+    if (this.down) {
+        this.arrowMesh.rotation.z = -Math.PI * 0.5;
+        this.arrowMesh.position.y = -0.5;
+    } else {
+        this.arrowMesh.rotation.z = Math.PI * 0.5;
+        this.arrowMesh.position.y = 0.5;
+    }
     
     this.arrows = new THREE.Object3D();
-    this.arrows.add(this.upArrowMesh);
-    this.arrows.add(this.downArrowMesh);
+    this.arrows.add(this.arrowMesh);
     this.arrows.position.z = this.z;
     
     this.initThreeSceneObject({
@@ -304,9 +323,9 @@ var BuildingCursorArrows = function(options) {
     this.addToScene();
 };
 
-BuildingCursorArrows.prototype = new ThreeSceneObject();
+BuildingCursorArrow.prototype = new ThreeSceneObject();
 
-BuildingCursorArrows.prototype.createArrowMesh = function() {
+BuildingCursorArrow.prototype.createArrowMesh = function() {
     var shape = utilTHREE.createArrowShape(0.6, 0.4, 0.3, 0.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.1), new THREE.Vector3(0, 0, 0.1));
     var extrudeSettings = {
