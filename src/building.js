@@ -14,7 +14,8 @@ Building.prototype.initBuilding = function(options) {
         gridZ: 0,
         blocksSpec: [], // Listed from top downwards
         stationary: false,
-        topY: undefined
+        topY: undefined,
+        deltaY: 0
     };
     objectUtil.initWithDefaults(this, defaults, options);
     if (this.topY === undefined) {
@@ -35,7 +36,9 @@ Building.prototype.initBuilding = function(options) {
 };
 
 Building.prototype.update = function(deltaTime) {
-    this.topY = towardsValue(this.topY, this.topYTarget, deltaTime * 7);
+    this.deltaY = (this.deltaY + (this.topYTarget - this.topY) * Game.parameters.get('buildingSpringStrength')) * Game.parameters.get('buildingSpringDamping');
+    this.topY += this.deltaY;
+    //this.topY = towardsValue(this.topY, this.topYTarget, deltaTime * 7);
     for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].topY = this.topY - i;
         this.blocks[i].update(deltaTime);
