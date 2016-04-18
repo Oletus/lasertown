@@ -124,11 +124,18 @@ Laser.inPath = function(path, segment) {
     return false;
 };
 
+Laser.startSound = new Audio('laser-start');
+
 Laser.prototype.update = function(deltaTime) {
     this.laserCannon.update(deltaTime);
     if (this.state.id === Laser.State.OFF) {
         this.pruneSegments(0);
-    } else if (this.state.id === Laser.State.ON) {
+    } else if (this.state.id === Laser.State.ON &&
+               (this.segments.length === 0 || !this.segments[0].loc.equals(this.laserCannon.loc)))
+    {
+        if (this.segments.length === 0) {
+            Laser.startSound.play();
+        }
         this.ensureSegmentExists(0);
         this.segments[0].loc = this.laserCannon.loc.copy();
     }
