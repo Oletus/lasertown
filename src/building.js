@@ -32,6 +32,7 @@ Building.prototype.initBuilding = function(options) {
     }
     this.roof = new BuildingRoof({building: this, sceneParent: this.sceneParent, level: this.level});
     this.roof.setStationary(this.stationary);
+    this.goalIndicator = null;
     this.updateRoof();
 };
 
@@ -44,6 +45,9 @@ Building.prototype.update = function(deltaTime) {
         this.blocks[i].update(deltaTime);
     }
     this.roof.update();
+    if (this.goalIndicator) {
+        this.goalIndicator.update(deltaTime);
+    }
 };
 
 Building.prototype.upPress = function() {
@@ -151,6 +155,24 @@ Building.prototype.updateRoof = function() {
     } else {
         this.roof.addToScene();
     }
+    if (this.hasGoal()) {
+        this.addGoalIndicator();
+    } /*else {
+        this.removeGoalIndicator();
+    }*/
+};
+
+Building.prototype.addGoalIndicator = function() {
+    if (this.goalIndicator === null) {
+        this.goalIndicator = new Building.GoalIndicator({building: this, sceneParent: this.sceneParent, level: this.level});
+    }
+    this.goalIndicator.addToScene();
+};
+
+Building.prototype.removeGoalIndicator = function() {
+    if (this.goalIndicator !== null) {
+        this.goalIndicator.removeFromScene();
+    }
 };
 
 Building.prototype.ownsSceneObject = function(object) {
@@ -203,6 +225,55 @@ Building.prototype.getSpec = function() {
     return spec;
 };
 
+Building.prototype.hasGoal = function() {
+    for (var i = 0; i < this.blocks.length; ++i) {
+        if (this.blocks[i] instanceof GoalBlock || this.blocks[i] instanceof GoalPostBlock) {
+            return true;
+        }
+    }
+    return false;
+};
+
+
+/**
+ * @constructor
+ */
+Building.GoalIndicator = function(options) {
+    var defaults = {
+        building: null,
+        level: null
+    };
+    objectUtil.initWithDefaults(this, defaults, options);
+
+    this.origin = new THREE.Object3D();
+
+    var textGeo = new THREE.TextGeometry( 'GOAL', {
+        font: Level.font,
+        size: 0.8,
+        height: 0.3,
+        curveSegments: 3,
+        bevelEnabled: false,
+    });
+    textGeo.center();
+    var material = BuildingCursor.material(0xcc9966, 0xffbb77);
+    this.textMesh = new THREE.Mesh(textGeo, material);
+    this.origin.add(this.textMesh);
+
+    this.initThreeSceneObject({
+        object: this.origin,
+        sceneParent: options.sceneParent
+    });
+};
+
+Building.GoalIndicator.prototype = new ThreeSceneObject();
+
+Building.GoalIndicator.prototype.update = function(deltaTime) {
+    this.textMesh.rotation.y += deltaTime;
+    this.origin.position.x = this.level.gridXToWorld(this.building.gridX);
+    this.origin.position.z = this.level.gridZToWorld(this.building.gridZ);
+    this.origin.position.y = this.building.topY + 1.5;
+};
+
 
 /**
  * @constructor
@@ -240,8 +311,9 @@ var BuildingCursor = function(options) {
     
 BuildingCursor.prototype = new ThreeSceneObject();
 
-BuildingCursor.material = function(color) {
-    var material = new THREE.MeshPhongMaterial( { color: color, emissive: 0x448888 } );
+BuildingCursor.material = function(color, emissiveColor) {
+    if (emissiveColor === undefined) emissiveColor = 0x448888;
+    var material = new THREE.MeshPhongMaterial( { color: color, emissive: emissiveColor } );
     material.transparent = true;
     material.opacity = 0.7;
     return material;
