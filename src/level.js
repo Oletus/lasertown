@@ -300,7 +300,7 @@ Level.prototype.getLookAtCenter = function() {
     );
 };
 
-Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x777777, specular: 0x222222 } );
+Level.groundMaterial = new THREE.MeshPhongMaterial( { color: 0x222222, specular: 0x555555 } );
 Level.sidewalkMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x111111 } );
 
 var GridTile = function(options) {
@@ -325,7 +325,7 @@ var GridTile = function(options) {
 GridTile.prototype = new ThreeSceneObject();
 
 GridTile.prototype.createGroundTileMesh = function() {
-    var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.4);
+    /*var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.4);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
     var extrudeSettings = {
         steps: 1,
@@ -333,9 +333,11 @@ GridTile.prototype.createGroundTileMesh = function() {
         extrudePath: line
     };
     this.groundGeometry = new THREE.ExtrudeGeometry(groundShape, extrudeSettings);
-    var groundMesh = new THREE.Mesh( this.groundGeometry, Level.groundMaterial );
+    var groundMesh = new THREE.Mesh( this.groundGeometry, Level.groundMaterial );*/
+    var groundMesh = Level.streetsModel.clone();
+    groundMesh.position.y = -0.39;
     
-    var sidewalkShape = utilTHREE.createSquareWithHole(2.0, 1.2);
+    /*var sidewalkShape = utilTHREE.createSquareWithHole(2.0, 1.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, -1.2, 0));
     var extrudeSettings = {
         steps: 1,
@@ -343,7 +345,9 @@ GridTile.prototype.createGroundTileMesh = function() {
         extrudePath: line
     };
     this.sidewalkGeometry = new THREE.ExtrudeGeometry(sidewalkShape, extrudeSettings);
-    this.sidewalk = new THREE.Mesh( this.sidewalkGeometry, Level.sidewalkMaterial );
+    this.sidewalk = new THREE.Mesh( this.sidewalkGeometry, Level.sidewalkMaterial );*/
+    this.sidewalk = Level.sidewalkModel.clone();
+    this.sidewalk.position.y = -0.39;
     
     var parent = new THREE.Object3D();
     parent.add(groundMesh);
@@ -597,10 +601,18 @@ Level.prototype.downPress = function() {
 };
 
 Level.font = null;
+Level.sidewalkModel = null;
+Level.streetsModel = null;
 
 Level.loadAssets = function() {
     utilTHREE.loadFont('aldo_the_apache_regular', function(font) {
         Level.font = font;
+    });
+    utilTHREE.loadJSONModel('sidewalk', function(object) {
+        Level.sidewalkModel = object;
+    });
+    utilTHREE.loadJSONModel('streets', function(object) {
+        Level.streetsModel = object;
     });
 };
 
