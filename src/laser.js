@@ -222,6 +222,12 @@ var LaserCannon = function(options) {
     this.origin = new THREE.Object3D();
     this.origin.add(this.mesh);
     
+    var boxGeometry = new THREE.BoxGeometry(4, 1, 3);
+    var material = Level.groundMaterial;
+    var box = new THREE.Mesh(boxGeometry, material);
+    box.position.y = -2;
+    this.origin.add(box);
+    
     this.loc = new LaserSegmentLocation({});
     
     this.initThreeSceneObject({
