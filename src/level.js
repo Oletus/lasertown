@@ -206,7 +206,10 @@ Level.prototype.getBuildingFromGrid = function(x, z) {
 Level.prototype.handleLaser = function(loc) {
     var building = this.getBuildingFromGrid(loc.x, loc.z);
     if (!building) {
-        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ && !this.mouseDownBuilding) {
+        if (loc.x === this.goal.gridX && loc.z === this.goal.gridZ &&
+            loc.y < this.goal.topY && loc.y > 0 &&
+            !this.mouseDownBuilding)
+        {
             if (this.state.id !== Level.State.SUCCESS) {
                 this.state.change(Level.State.SUCCESS);
                 this.sign.setText('SUCCESS!');
