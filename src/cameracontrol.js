@@ -12,6 +12,7 @@ var OrbitCameraControl = function(options) {
         y: 15,
         minY: 5,
         maxY: 30,
+        relativeY: true,
         orbitDistance: 20,
         orbitAngle: 0,
         minOrbitAngle: -Infinity,
@@ -33,7 +34,11 @@ OrbitCameraControl.prototype.updateCamera = function() {
         var orbitDistance = this.orbitDistance;
         this.camera.position.z = this.lookAt.z + orbitDistance * Math.sin(this.orbitAngle);
         this.camera.position.x = this.lookAt.x + orbitDistance * Math.cos(this.orbitAngle);
-        this.camera.position.y = this.lookAt.y + this.y;
+        if (this.relativeY) {
+            this.camera.position.y = this.lookAt.y + this.y;
+        } else {
+            this.camera.position.y = this.y;
+        }
         this.camera.lookAt(this.lookAt);
     }
 };
@@ -43,6 +48,7 @@ OrbitCameraControl.prototype.updateCamera = function() {
  */
 OrbitCameraControl.prototype.setLookAt = function(lookAt) {
     this.lookAt = lookAt.clone();
+    this.updateCamera();
 };
 
 OrbitCameraControl.prototype.update = function(deltaTime) {

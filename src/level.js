@@ -90,6 +90,7 @@ var Level = function(options) {
         camera: this.camera,
         lookAt: this.getLookAtCenter(),
         y: 5,
+        relativeY: false,
         orbitAngle: Math.PI * 0.9
     });
     this.mouseDownBuilding = null;
@@ -166,6 +167,8 @@ Level.prototype.update = function(deltaTime) {
         }
     }
     this.cameraControl.update(deltaTime);
+    this.cameraControl.setLookAt(this.getLookAtCenter());
+
     for (var i = 0; i < this.objects.length; ++i) {
         this.objects[i].update(deltaTime);
     }
@@ -180,7 +183,12 @@ Level.prototype.update = function(deltaTime) {
     
     if (this.editor) {
         this.editor.update(deltaTime);
+    } else {
+        if (this.state.id === Level.State.SUCCESS) {
+            this.updateSuccess(deltaTime);
+        }
     }
+    this.updateSpotLightTarget();
 };
 
 Level.prototype.updateIntro = function(deltaTime) {
@@ -203,6 +211,10 @@ Level.prototype.updateIntro = function(deltaTime) {
         }
     }
     return (this.introState.id === Level.IntroState.FINISHED);
+};
+
+Level.prototype.updateSuccess = function(deltaTime) {
+    this.townParent.position.y += deltaTime * this.state.time * 5;
 };
 
 Level.prototype.render = function(renderer) {
@@ -240,7 +252,7 @@ Level.prototype.handleLaser = function(loc) {
 Level.prototype.getLookAtCenter = function() {
     return new THREE.Vector3(
         (this.buildingGrid.length - 1) * GRID_SPACING * 0.5,
-        -1.5,
+        -1.5 + this.townParent.position.y,
         (this.buildingGrid[0].length - 1) * GRID_SPACING * 0.5
     );
 };
@@ -378,6 +390,11 @@ Level.Sign.prototype.setSecondaryText = function(text) {
     this.parent.add(textMesh);
 };
 
+Level.prototype.updateSpotLightTarget = function() {
+    var spotTarget = this.getLookAtCenter();
+    this.spotLight.target.position.set(spotTarget.x, spotTarget.y, spotTarget.z);
+};
+
 Level.prototype.setupLights = function() {
     this.scene.add(new THREE.AmbientLight(0x222222));
     var mainLight = new THREE.DirectionalLight(0xaaa588, 1);
@@ -385,12 +402,11 @@ Level.prototype.setupLights = function() {
     this.scene.add(mainLight);
     
     var spotLight = new THREE.SpotLight(0x665555);
+    this.spotLight = spotLight;
     spotLight.position.set( 125, 250, -250 );
-    var spotTarget = this.getLookAtCenter();
-    
     spotLight.target = new THREE.Object3D();
     this.scene.add(spotLight.target);
-    spotLight.target.position.set(spotTarget.x, spotTarget.y, spotTarget.z);
+    this.updateSpotLightTarget();
 
     spotLight.castShadow = true;
     
