@@ -10,7 +10,9 @@ var Level = function(options) {
         width: 5,
         depth: 5,
         cameraAspect: 16 / 9,
-        buildingGridSpec: null
+        buildingGridSpec: null,
+        signText: 'LASER TOWN',
+        needGoal: true
     };
     objectUtil.initWithDefaults(this, defaults, options);
     
@@ -69,7 +71,7 @@ var Level = function(options) {
     });
     this.objects.push(this.laser);
     
-    if (!hasGoal) {
+    if (!hasGoal && this.needGoal) {
         this.buildingGrid.push([]); // Extra x row for goal
         for (var i = 0; i < this.buildingGrid[0].length; ++i) {
             this.buildingGrid[this.buildingGrid.length - 1].push(null);
@@ -111,7 +113,7 @@ var Level = function(options) {
     this.mouseDownMoveCamera = false;
 
     this.sign = new Level.Sign({sceneParent: this.scene});
-    this.sign.setText('LASER TOWN');
+    this.sign.setText(this.signText);
     this.setupLights();
     //this.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.01 );
     
@@ -125,6 +127,12 @@ Level.completedSound = new Audio('laser_completed');
 Level.fromSpec = function(options, spec) {
     var parsedSpec = parseSpec(spec);
     options.buildingGridSpec = parsedSpec.buildingGridSpec;
+    if (parsedSpec.signText !== undefined) {
+        options.signText = parsedSpec.signText;
+    }
+    if (parsedSpec.needGoal !== undefined) {
+        options.needGoal = parsedSpec.needGoal;
+    }
     return new Level(options);
 };
 
