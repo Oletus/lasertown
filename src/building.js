@@ -110,11 +110,13 @@ Building.prototype.constructBlockFromSpec = function(spec) {
 
 Building.prototype.addBlock = function(spec) {
     this.blocks.push(this.constructBlockFromSpec(spec));
+    this.blocks[this.blocks.length - 1].updateModel();
     this.updateRoof();
 };
 
 Building.prototype.addBlockToTop = function(spec) {
     this.blocks.splice(0, 0, this.constructBlockFromSpec(spec));
+    this.blocks[0].updateModel();
     this.updateRoof();
 };
 
