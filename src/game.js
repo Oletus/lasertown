@@ -44,6 +44,8 @@ var Game = function(resizer, renderer) {
         Game.music.playSingular(true);
     };
     utilTHREE.onAllLoaded(initLevel);
+    
+    this.downIndex = -1;
 };
 
 Game.music = new Audio('laser_music');
@@ -82,28 +84,30 @@ Game.prototype.ctrlsPress = function() {
     this.level.editor.ctrlsPress();
 };
 
-Game.prototype.mouseMove = function(event) {
+Game.prototype.canvasMove = function(event) {
     if (this.level) {
         this.level.setCursorPosition(this.viewportPos(event));
     }
 };
 
-Game.prototype.mouseDown = function(event) {
-    if (this.level) {
+Game.prototype.canvasPress = function(event) {
+    if (this.level && this.downIndex === -1) {
         this.level.setCursorPosition(this.viewportPos(event));
         this.level.mouseDown();
+        this.downIndex = event.index;
     }
 };
 
-Game.prototype.mouseUp = function(event) {
-    if (this.level) {
+Game.prototype.canvasRelease = function(event) {
+    if (this.level && this.downIndex === event.index) {
         this.level.setCursorPosition(this.viewportPos(event));
         this.level.mouseUp();
+        this.downIndex = -1;
     }
 };
 
 Game.prototype.viewportPos = function(event) {
-    var canvasPos = this.resizer.getCanvasPosition(event);
+    var canvasPos = new Vec2(event.current.x, event.current.y);
     canvasPos.x = 2 * canvasPos.x / this.resizer.canvas.width - 1;
     canvasPos.y = 1 - 2 * canvasPos.y / this.resizer.canvas.height;
     return new THREE.Vector3(canvasPos.x, canvasPos.y, 0);
@@ -180,10 +184,12 @@ Game.parameters = new GameParameters({
 });
 
 var DEV_MODE = (window.location.href.indexOf("?devMode") != -1);
+var POST_COMPO = (window.location.href.indexOf("?postCompo") != -1);
 
 window['start'] = function() {
     var DEBUG_MAIN_LOOP = DEV_MODE && true; // Set to true to allow fast-forwarding main loop with 'f'
     Game.parameters.set('muteAudio', (DEV_MODE && true)); // Set to true if sounds annoy developers
+    Game.parameters.set('postLD', POST_COMPO);
     if (DEV_MODE) {
         Game.parameters.initGUI();
     }
@@ -206,22 +212,20 @@ window['start'] = function() {
             }
         }
     });
-    var eventListener = function(e) {
-        if (e.type === 'mousemove') {
-            game.mouseMove(e);
-        }
-        if (e.type === 'mousedown') {
-            game.mouseDown(e);
-        }
-        if (e.type === 'mouseup') {
-            game.mouseUp(e);
-        }
-        e.preventDefault();
-    };
     
     game = new Game(resizer, renderer);
+    var eventListener = resizer.createPointerEventListener(game, false);
+    var postLD = Game.parameters.get('postLD');
     resizer.canvas.addEventListener('mousemove', eventListener);
-    resizer.canvas.addEventListener('mouseup', eventListener);
     resizer.canvas.addEventListener('mousedown', eventListener);
+    resizer.canvas.addEventListener('mouseup', eventListener);
+    resizer.canvas.addEventListener('mouseout', eventListener);
+    if (postLD) {
+        resizer.canvas.addEventListener('touchmove', eventListener);
+        resizer.canvas.addEventListener('touchstart', eventListener);
+        resizer.canvas.addEventListener('touchend', eventListener);
+        resizer.canvas.addEventListener('touchcancel', eventListener);
+    }
+    
     startMainLoop([resizer, game, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
 };

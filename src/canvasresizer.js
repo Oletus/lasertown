@@ -420,6 +420,15 @@ CanvasResizer.prototype.render = function() {
 };
 
 /**
+ * This function is here just so that it can be overridden by testing functions.
+ * @return {Object} Canvas bounding client rect.
+ * @protected
+ */
+CanvasResizer.prototype._getCanvasBoundingClientRect = function() {
+    return this.canvas.getBoundingClientRect();
+};
+
+/**
  * Get a canvas coordinate space position from a given event. The coordinate
  * space is relative to the width and height properties of the canvas.
  * @param {MouseEvent|PointerEvent|TouchEvent} Event to get the position from.
@@ -432,7 +441,7 @@ CanvasResizer.prototype.render = function() {
  * positions in the canvas coordinate space.
  */
 CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
-    var rect = this.canvas.getBoundingClientRect();
+    var rect = this._getCanvasBoundingClientRect();
     var x, y;
     if (event.touches !== undefined && event.touches.length > 0) {
         var touchIndex = 0;
@@ -468,6 +477,139 @@ CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
     } else {
         return {x: xRel, y: yRel};
     }
+};
+
+/**
+ * Create an event listener function that will normalize different events into unified API calls and make the event
+ * coordinates relative to the canvas coordinate system.
+ * @param {Object} callbackObject Object where canvasPress and canvasRelease functions will be called on.
+ * @param {boolean} listenOnCanvas Automatically add listeners on the canvas.
+ * @return {function} Function to be added as a mouse and touch listener to elements (for example the canvas element).
+ */
+CanvasResizer.prototype.createPointerEventListener = function(callbackObject, listenOnCanvas) {
+    var that = this;
+
+    var coordinates = [
+    ];
+    
+    var alwaysTracked = [
+        'mouse'
+    ];
+    
+    var coordinateIndices = {};
+    
+    for (var i = 0; i < alwaysTracked.length; ++i) {
+        var index = coordinates.length;
+        coordinateIndices[alwaysTracked[i]] = index;
+        coordinates.push({
+            current: new Vec2(-Infinity, -Infinity),
+            lastDown: new Vec2(-Infinity, -Infinity),
+            isDown: false,
+            index: index
+        });
+    }
+
+    var eventListener = function(e) {
+        var type;
+        var ids = [];
+        if (e.type === 'mousemove') {
+            type = 'move';
+            ids.push('mouse');
+        } else if (e.type === 'mousedown') {
+            type = 'down';
+            ids.push('mouse');
+        } else if (e.type === 'mouseup' || e.type === 'mouseout') {
+            type = 'up';
+            ids.push('mouse');
+        } else if (e.type === 'touchmove') {
+            type = 'move';
+            for (var i = 0; i < e.changedTouches.length; ++i) {
+                ids.push('touch' + e.changedTouches[i].identifier);
+            }
+        } else if (e.type === 'touchstart') {
+            type = 'down';
+            for (var i = 0; i < e.changedTouches.length; ++i) {
+                ids.push('touch' + e.changedTouches[i].identifier);
+            }
+        } else if (e.type === 'touchcancel' || e.type === 'touchend') {
+            type = 'up';
+            for (var i = 0; i < e.changedTouches.length; ++i) {
+                ids.push('touch' + e.changedTouches[i].identifier);
+            }
+        }
+        for (var i = 0; i < ids.length; ++i) {
+            var id = ids[i];
+            if (type === 'down') {
+                var touchId = undefined;
+                if (id !== 'mouse') {
+                    touchId = id.substring(5);
+                }
+                var pos = that.getCanvasPosition(e, touchId);
+                if (!coordinateIndices.hasOwnProperty(id) || coordinateIndices[id] === -1) {
+                    var reuseIndexKey = undefined;
+                    for (var key in coordinateIndices) {
+                        if (coordinateIndices.hasOwnProperty(key) &&
+                            alwaysTracked.indexOf(key) < 0 &&
+                            coordinateIndices[key] >= 0 &&
+                            !coordinates[coordinateIndices[key]].isDown) {
+                            reuseIndexKey = key;
+                        }
+                    }
+                    if (reuseIndexKey !== undefined) {
+                        coordinateIndices[id] = coordinateIndices[reuseIndexKey];
+                        coordinateIndices[reuseIndexKey] = -1;
+                    } else {
+                        var index = coordinates.length;
+                        coordinates.push({
+                            current: pos,
+                            lastDown: pos,
+                            isDown: false,
+                            index: index
+                        });
+                        coordinateIndices[id] = index;
+                    }
+                }
+                var index = coordinateIndices[id];
+                if (!coordinates[index].isDown) {
+                    coordinates[index].lastDown = pos;
+                    coordinates[index].current = pos;
+                    coordinates[index].isDown = true;
+                    coordinates[index].index = index;
+                    callbackObject.canvasPress(coordinates[index]);
+                }
+            } else if (type === 'up') {
+                if (coordinateIndices.hasOwnProperty(id) && coordinateIndices[id] !== -1) {
+                    var index = coordinateIndices[id];
+                    if (coordinates[index].isDown) {
+                        callbackObject.canvasRelease(coordinates[index]);
+                        coordinates[index].isDown = false;
+                    }
+                }
+            } else if (type === 'move') {
+                var touchId = undefined;
+                if (id !== 'mouse') {
+                    touchId = id.substring(5);
+                }
+                var pos = that.getCanvasPosition(e, touchId);
+                var index = coordinateIndices[id];
+                coordinates[index].current = pos;
+                callbackObject.canvasMove(coordinates[index]);
+            }
+        }
+        e.preventDefault();
+    };
+    if (listenOnCanvas) {
+        this.canvas.addEventListener('mousemove', eventListener);
+        this.canvas.addEventListener('mousedown', eventListener);
+        this.canvas.addEventListener('mouseup', eventListener);
+        this.canvas.addEventListener('mouseout', eventListener);
+        this.canvas.addEventListener('touchmove', eventListener);
+        this.canvas.addEventListener('touchstart', eventListener);
+        this.canvas.addEventListener('touchend', eventListener);
+        this.canvas.addEventListener('touchcancel', eventListener);
+    }
+    
+    return eventListener;
 };
 
 /**
