@@ -63,7 +63,7 @@ var Audio = function(filename, fileExtensions) {
 /**
  * Path for audio files. Set this before creating any Audio objects.
  */
-Audio.audioPath = 'assets/sounds/';
+Audio.audioPath = 'assets/audio/';
 
 /**
  * Default file extensions. Set this before creating any Audio objects. Ogg and mp3 are enough for cross-browser
