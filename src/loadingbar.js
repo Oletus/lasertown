@@ -1,5 +1,9 @@
 'use strict';
 
+if (window.GJS === undefined) {
+    window.GJS = {};
+}
+
 /**
  * Loading bar.
  * @param {Array.<Object>=} objectsToPoll Objects that contain loadedFraction()
@@ -12,8 +16,8 @@ var LoadingBar = function(objectsToPoll) {
         if (typeof Sprite !== 'undefined') {
             objectsToPoll.push(Sprite);
         }
-        if (typeof Audio !== 'undefined') {
-            objectsToPoll.push(Audio);
+        if (typeof GJS.Audio !== 'undefined') {
+            objectsToPoll.push(GJS.Audio);
         }
     }
     this.objectsToPoll = objectsToPoll;

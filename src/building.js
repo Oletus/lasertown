@@ -40,7 +40,7 @@ Building.prototype.initBuilding = function(options) {
     this.timeStill = 0.0;
 };
 
-Building.moveSound = new Audio('building_move');
+Building.moveSound = new GJS.Audio('building_move');
 
 Building.prototype.update = function(deltaTime) {
     this.deltaY = (this.deltaY + (this.topYTarget - this.topY) * Game.parameters.get('buildingSpringStrength')) * Game.parameters.get('buildingSpringDamping');

@@ -48,7 +48,7 @@ var Game = function(resizer, renderer) {
     this.downIndex = -1;
 };
 
-Game.music = new Audio('laser_music');
+Game.music = new GJS.Audio('laser_music');
 
 Game.prototype.zPress = function() {
     this.level.editor.zPress();
@@ -148,7 +148,7 @@ Game.prototype.update = function(deltaTime) {
         }
     }
     
-    Audio.muteAll(Game.parameters.get('muteAudio'));
+    GJS.Audio.muteAll(Game.parameters.get('muteAudio'));
 };
 
 Game.prototype.loadLevel = function(id) {

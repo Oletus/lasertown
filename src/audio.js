@@ -1,19 +1,23 @@
 'use strict';
 
+if (window.GJS === undefined) {
+    window.GJS = {};
+}
+
 /**
  * An object representing one audio sample. Uses Howler.js under the hood if it is available.
  * @param {string} filename Name of the audio file without a file extension. Assumes that the audio file is located
- * in Audio.audioPath.
+ * in GJS.Audio.audioPath.
  * @param {Array.<string>} fileExtensions Array of extensions. Defaults to ogg and mp3, which should be enough for
- * cross-browser compatibility. The default file extensions are configurable through Audio.defaultExtensions.
+ * cross-browser compatibility. The default file extensions are configurable through GJS.Audio.defaultExtensions.
  * @constructor
  */
-var Audio = function(filename, fileExtensions) {
+GJS.Audio = function(filename, fileExtensions) {
     if (fileExtensions === undefined) {
-        fileExtensions = Audio.defaultExtensions;
+        fileExtensions = GJS.Audio.defaultExtensions;
     }
     var that = this;
-    Audio.allAudio.push(this);
+    GJS.Audio.allAudio.push(this);
     this.loaded = false; // Used purely for purposes of marking the audio loaded.
     var markLoaded = function() {
         that._markLoaded();
@@ -22,11 +26,11 @@ var Audio = function(filename, fileExtensions) {
     this.filenames = [];
     var canDetermineLoaded = false;
     for (var i = 0; i < fileExtensions.length; ++i) {
-        this.filenames.push(Audio.audioPath + filename + '.' + fileExtensions[i]);
+        this.filenames.push(GJS.Audio.audioPath + filename + '.' + fileExtensions[i]);
     }
     // Don't use howler when using the file protocol, since it requires CORS requests
     if (typeof Howl !== 'undefined' && window.location.origin.substring(0, 4) != 'file') {
-        // Use howler.js to implement Audio
+        // Use howler.js to implement GJS.Audio
         this._howl = new Howl({
             src: this.filenames,
             onload: markLoaded,
@@ -61,36 +65,36 @@ var Audio = function(filename, fileExtensions) {
 };
 
 /**
- * Path for audio files. Set this before creating any Audio objects.
+ * Path for audio files. Set this before creating any GJS.Audio objects.
  */
-Audio.audioPath = 'assets/audio/';
+GJS.Audio.audioPath = 'assets/audio/';
 
 /**
- * Default file extensions. Set this before creating any Audio objects. Ogg and mp3 are enough for cross-browser
+ * Default file extensions. Set this before creating any GJS.Audio objects. Ogg and mp3 are enough for cross-browser
  * compatibility.
  */
-Audio.defaultExtensions = ['ogg', 'mp3'];
+GJS.Audio.defaultExtensions = ['ogg', 'mp3'];
 
 /**
  * True when all audio is muted. Set this by calling muteAll.
  */
-Audio.allMuted = false;
+GJS.Audio.allMuted = false;
 
 /**
  * @param {boolean} mute Set to true to mute all audio.
  */
-Audio.muteAll = function(mute) {
-    if (Audio.allMuted !== mute) {
-        Audio.allMuted = mute;
+GJS.Audio.muteAll = function(mute) {
+    if (GJS.Audio.allMuted !== mute) {
+        GJS.Audio.allMuted = mute;
         if (typeof Howler !== 'undefined') {
             if (mute) {
-                Howler.mute();
+                Howler.mute(true);
             } else {
-                Howler.unmute();
+                Howler.mute(false);
             }
         } else {
-            for (var i = 0; i < Audio.allAudio.length; ++i) {
-                var audio = Audio.allAudio[i];
+            for (var i = 0; i < GJS.Audio.allAudio.length; ++i) {
+                var audio = GJS.Audio.allAudio[i];
                 audio.audio.muted = mute;
                 for (var j = 0; j < audio.clones.length; ++j) {
                     audio.clones[j].muted = mute;
@@ -103,26 +107,26 @@ Audio.muteAll = function(mute) {
 /**
  * All audio objects that have been created.
  */
-Audio.allAudio = [];
+GJS.Audio.allAudio = [];
 
 /**
- * How many Audio objects have been fully loaded.
+ * How many GJS.Audio objects have been fully loaded.
  */
-Audio.loadedCount = 0;
+GJS.Audio.loadedCount = 0;
 
 /**
- * @return {number} Amount of Audio objects that have been fully loaded per amount that has been created.
+ * @return {number} Amount of GJS.Audio objects that have been fully loaded per amount that has been created.
  * Name specified as string to support Closure compiler together with loadingbar.js.
  */
-Audio['loadedFraction'] = function() {
-    return Audio.loadedCount / Audio.allAudio.length;
+GJS.Audio['loadedFraction'] = function() {
+    return GJS.Audio.loadedCount / GJS.Audio.allAudio.length;
 };
 
 /**
  * @param {HTMLAudioElement} audioElement Element to add audio sources to.
  * @protected
  */
-Audio.prototype.addSourcesTo = function(audioElement) {
+GJS.Audio.prototype.addSourcesTo = function(audioElement) {
     for (var i = 0; i < this.filenames.length; ++i) {
         var source = document.createElement('source');
         source.src = this.filenames[i];
@@ -133,7 +137,7 @@ Audio.prototype.addSourcesTo = function(audioElement) {
 /**
  * Play a clone of this sample. Will not affect other clones. Playback will not loop and playback can not be stopped.
  */
-Audio.prototype.play = function () {
+GJS.Audio.prototype.play = function () {
     if (this._howl) {
         this._howl.play();
         return;
@@ -152,7 +156,7 @@ Audio.prototype.play = function () {
  * Playback can be stopped by calling stop().
  * @param {boolean=} loop Whether the sample should loop when played. Defaults to false.
  */
-Audio.prototype.playSingular = function (loop) {
+GJS.Audio.prototype.playSingular = function (loop) {
     if (loop === undefined) {
         loop = false;
     }
@@ -185,7 +189,7 @@ Audio.prototype.playSingular = function (loop) {
 /**
  * Stop playing this sample.
  */
-Audio.prototype.stop = function () {
+GJS.Audio.prototype.stop = function () {
     if (this._howl) {
         this._howl.stop();
         return;
@@ -203,7 +207,7 @@ Audio.prototype.stop = function () {
  * @protected
  * @return {HTMLAudioElement} Clone that is ready for playback.
  */
-Audio.prototype.ensureOneClone = function() {
+GJS.Audio.prototype.ensureOneClone = function() {
     for (var i = 0; i < this.clones.length; ++i) {
         if (this.clones[i].ended || (this.clones[i].readyState == 4 && this.clones[i].paused)) {
             this.clones[i].currentTime = 0;
@@ -211,7 +215,7 @@ Audio.prototype.ensureOneClone = function() {
         }
     }
     var clone = document.createElement('audio');
-    if (Audio.allMuted) {
+    if (GJS.Audio.allMuted) {
         clone.muted = true;
     }
     this.addSourcesTo(clone);
@@ -223,10 +227,10 @@ Audio.prototype.ensureOneClone = function() {
  * Mark this audio sample loaded.
  * @protected
  */
-Audio.prototype._markLoaded = function() {
+GJS.Audio.prototype._markLoaded = function() {
     if (this.loaded) {
         return;
     }
     this.loaded = true;
-    Audio.loadedCount++;
+    GJS.Audio.loadedCount++;
 };

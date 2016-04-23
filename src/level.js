@@ -124,7 +124,7 @@ var Level = function(options) {
     }
 };
 
-Level.completedSound = new Audio('laser_completed');
+Level.completedSound = new GJS.Audio('laser_completed');
 
 Level.fromSpec = function(options, spec) {
     var parsedSpec = parseSpec(spec);
