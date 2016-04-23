@@ -351,7 +351,7 @@ BuildingCursor.prototype.update = function(deltaTime) {
 };
 
 BuildingCursor.prototype.createMesh = function() {
-    var shape = utilTHREE.createSquareWithHole(1.9, 1.5);
+    var shape = utilTHREE.createSquareWithHoleShape(1.9, 1.5);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -0.1, 0), new THREE.Vector3(0, 0.1, 0));
     var extrudeSettings = {
         steps: 1,

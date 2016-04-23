@@ -108,6 +108,8 @@ var Level = function(options) {
         orbitAngle: Math.PI * 0.9
     });
     this.mouseDownBuilding = null;
+    this.lastCursorWorldPosition = new THREE.Vector3();
+    this.mouseDownWorldPosition = new THREE.Vector3();
     this.sinceNudge = 0;
     this.movedChosenBuilding = false;
     this.mouseDownMoveCamera = false;
@@ -333,7 +335,7 @@ var GridTile = function(options) {
 GridTile.prototype = new ThreeSceneObject();
 
 GridTile.prototype.createGroundTileMesh = function() {
-    /*var groundShape = utilTHREE.createSquareWithHole(GRID_SPACING, 1.4);
+    /*var groundShape = utilTHREE.createSquareWithHoleShape(GRID_SPACING, 1.4);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
     var extrudeSettings = {
         steps: 1,
@@ -345,7 +347,7 @@ GridTile.prototype.createGroundTileMesh = function() {
     var groundMesh = Level.streetsModel.clone();
     groundMesh.position.y = -0.39;
     
-    /*var sidewalkShape = utilTHREE.createSquareWithHole(2.0, 1.2);
+    /*var sidewalkShape = utilTHREE.createSquareWithHoleShape(2.0, 1.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, -1.2, 0));
     var extrudeSettings = {
         steps: 1,
@@ -509,6 +511,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
                 mouseOverBuilding = this.objects[i].building;
             }
         }
+        this.lastCursorWorldPosition.copy(nearest.point);
     }
     
     if (this.mouseDownMoveCamera) {
@@ -519,14 +522,25 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             this.cameraControl.moveOrbitAngle(diffX);
         }
     } else if (this.mouseDownBuilding) {
-        var steps = (this.mouseDownCursorPosition.y - this.lastCursorPosition.y) / 0.05;
+        var upPosition = this.mouseDownWorldPosition.clone();
+        upPosition.y += 1.0;
+        upPosition.project(this.camera);
+        upPosition.z = 0.0;
+        upPosition.sub(this.mouseDownCursorPosition);
+        // upPosition now holds the diff between the position that the cursor should be to move one unit upwards
+        // and the down position. This is a pretty good approximation for mapping cursor movement exactly to the
+        // building movement on screen.
+        if (!Game.parameters.get('postLD')) {
+            upPosition.y = 0.05;
+        }
+        var steps = (this.lastCursorPosition.y - this.mouseDownCursorPosition.y) / upPosition.y;
         if (Game.parameters.get('roundedMovement')) {
             steps = Math.round(steps);
         }
         if (steps !== 0) {
             this.movedChosenBuilding = true;
         }
-        this.chosenBuilding.topYTarget = this.mouseDownTopYTarget - steps;
+        this.chosenBuilding.topYTarget = this.mouseDownTopYTarget + steps;
         this.chosenBuilding.clampY();
         if (!Game.parameters.get('roundedMovement')) {
             this.chosenBuilding.topY = this.chosenBuilding.topYTarget;
@@ -557,6 +571,7 @@ Level.prototype.mouseDown = function() {
         if (!this.chosenBuilding.stationary) {
             this.sinceNudge = 0;
             this.mouseDownBuilding = this.chosenBuilding;
+            this.mouseDownWorldPosition.copy(this.lastCursorWorldPosition);
             this.mouseDownTopYTarget = this.chosenBuilding.topYTarget;
             this.mouseDownMoveCamera = false;
         }

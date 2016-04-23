@@ -175,7 +175,8 @@ Game.parameters = new GameParameters({
     'playBuildingMoveSound': {initial: false},
     'buildingSpringStrength': {initial: 0.1, min: 0.01, max: 0.2},
     'buildingSpringDamping': {initial: 0.77, min: 0.5, max: 0.95},
-    'muteAudio': {initial: false}
+    'muteAudio': {initial: false},
+    'postLD': {initial: false}  // To activate post-LD improvements
 });
 
 var DEV_MODE = (window.location.href.indexOf("?devMode") != -1);
