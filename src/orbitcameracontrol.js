@@ -1,8 +1,14 @@
 'use strict';
 
+// Requires statemachine.js, utiljs.js
+
 /**
  * Camera controller class to use with Three.js. Does not bind into mouse or touch automatically, so that the controls
  * can be activated conditionally by the game depending on where the cursor is clicked.
+ *
+ * The camera orbits around the target in the x and z directions, and moves up and down in the y direction.
+ *
+ * @param {Object} options Options for the camera. Angles are in radians.
  * @constructor
  */
 var OrbitCameraControl = function(options) {
@@ -29,6 +35,9 @@ OrbitCameraControl.State = {
     CONTROLLABLE: 1
 };
 
+/**
+ * Update the camera position based on the data stored in the class.
+ */
 OrbitCameraControl.prototype.updateCamera = function() {
     if (this.camera !== null) {
         var orbitDistance = this.orbitDistance;
@@ -44,13 +53,17 @@ OrbitCameraControl.prototype.updateCamera = function() {
 };
 
 /**
- * @param {THREE.Vector3} lookAt
+ * @param {THREE.Vector3} lookAt The position to point the camera at.
  */
 OrbitCameraControl.prototype.setLookAt = function(lookAt) {
     this.lookAt = lookAt.clone();
     this.updateCamera();
 };
 
+/**
+ * Update the camera in case it is animating. Animations always last for 1 second. TODO: Make this configurable.
+ * @param {number} deltaTime Time difference since the last call to this function.
+ */
 OrbitCameraControl.prototype.update = function(deltaTime) {
     this.state.update(deltaTime);
     if (this.state.id === OrbitCameraControl.State.ANIMATING) {
@@ -65,6 +78,10 @@ OrbitCameraControl.prototype.update = function(deltaTime) {
     }
 };
 
+/**
+ * Start animated camera transition.
+ * @param {Object} options Options for the animation to start.
+ */
 OrbitCameraControl.prototype.animate = function(options) {
     this.state.change(OrbitCameraControl.State.ANIMATING);
     this.startOrbitAngle = this.orbitAngle;
@@ -77,6 +94,10 @@ OrbitCameraControl.prototype.animate = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
 };
 
+/**
+ * Zoom the camera (move it up and down on the y axis). TODO: Add more options for zooming.
+ * @param {number} amount How much to change the zoom level.
+ */
 OrbitCameraControl.prototype.zoom = function(amount) {
     if (this.zoomMovesY) {
         this.y -= amount;
@@ -85,16 +106,26 @@ OrbitCameraControl.prototype.zoom = function(amount) {
     this.updateCamera();
 };
 
+/**
+ * Clamp the camera position in the y position to the configured max and min values.
+ */
 OrbitCameraControl.prototype.clampY = function() {
     this.y = mathUtil.clamp(this.minY, this.maxY, this.y);
 };
 
+/**
+ * Move the orbit angle of the camera.
+ * @param {number} amount How much to move the orbit angle in radians.
+ */
 OrbitCameraControl.prototype.moveOrbitAngle = function(amount) {
-    this.orbitAngle += amount * 0.1;
+    this.orbitAngle += amount;
     this.clampOrbitAngle();
     this.updateCamera();
 };
 
+/**
+ * Clamp the orbit angle to the configured max and min values.
+ */
 OrbitCameraControl.prototype.clampOrbitAngle = function() {
     this.orbitAngle = mathUtil.clamp(this.minOrbitAngle, this.maxOrbitAngle, this.orbitAngle);
 };

@@ -519,7 +519,7 @@ Level.prototype.setCursorPosition = function(viewportPos) {
             var diffY = (viewportPos.y - this.lastCursorPosition.y) / 0.05;
             var diffX = (viewportPos.x - this.lastCursorPosition.x) / 0.05;
             this.cameraControl.zoom(diffY);
-            this.cameraControl.moveOrbitAngle(diffX);
+            this.cameraControl.moveOrbitAngle(diffX * 0.1);
         }
     } else if (this.mouseDownBuilding) {
         var upPosition = this.mouseDownWorldPosition.clone();
