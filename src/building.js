@@ -351,7 +351,7 @@ BuildingCursor.prototype.update = function(deltaTime) {
 };
 
 BuildingCursor.prototype.createMesh = function() {
-    var shape = utilTHREE.createSquareWithHoleShape(1.9, 1.5);
+    var shape = GJS.utilTHREE.createSquareWithHoleShape(1.9, 1.5);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -0.1, 0), new THREE.Vector3(0, 0.1, 0));
     var extrudeSettings = {
         steps: 1,
@@ -425,7 +425,7 @@ var BuildingCursorArrow = function(options) {
 BuildingCursorArrow.prototype = new ThreeSceneObject();
 
 BuildingCursorArrow.prototype.createArrowMesh = function() {
-    var shape = utilTHREE.createArrowShape(0.6, 0.4, 0.3, 0.2);
+    var shape = GJS.utilTHREE.createArrowShape(0.6, 0.4, 0.3, 0.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.1), new THREE.Vector3(0, 0, 0.1));
     var extrudeSettings = {
         steps: 1,
@@ -517,40 +517,40 @@ BuildingBlock.prototype.initBuildingBlock = function(options) {
 BuildingBlock.goalMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x888888 } );
 
 BuildingBlock.loadModels = function() {
-    utilTHREE.loadJSONModel('stop', function(object) {
+    GJS.utilTHREE.loadJSONModel('stop', function(object) {
         StopBlock.model = object;
     });
-    utilTHREE.loadJSONModel('hole', function(object) {
+    GJS.utilTHREE.loadJSONModel('hole', function(object) {
         HoleBlock.model = object;
     });
-    utilTHREE.loadJSONModel('mirror', function(object) {
+    GJS.utilTHREE.loadJSONModel('mirror', function(object) {
         MirrorBlock.model = object;
     });
-    utilTHREE.loadJSONModel('periscope', function(object) {
+    GJS.utilTHREE.loadJSONModel('periscope', function(object) {
         PeriscopeBlock.model = object;
     });
-    utilTHREE.loadJSONModel('periscope2', function(object) {
+    GJS.utilTHREE.loadJSONModel('periscope2', function(object) {
         PeriscopeBlock.adjacentModel = object;
     });
-    utilTHREE.loadJSONModel('roof', function(object) {
+    GJS.utilTHREE.loadJSONModel('roof', function(object) {
         BuildingRoof.model = object;
     });
-    utilTHREE.loadJSONModel('stop_stationary', function(object) {
+    GJS.utilTHREE.loadJSONModel('stop_stationary', function(object) {
         StopBlock.stationaryModel = object;
     });
-    utilTHREE.loadJSONModel('hole_stationary', function(object) {
+    GJS.utilTHREE.loadJSONModel('hole_stationary', function(object) {
         HoleBlock.stationaryModel = object;
     });
-    utilTHREE.loadJSONModel('mirror_stationary', function(object) {
+    GJS.utilTHREE.loadJSONModel('mirror_stationary', function(object) {
         MirrorBlock.stationaryModel = object;
     });
-    utilTHREE.loadJSONModel('periscope_stationary', function(object) {
+    GJS.utilTHREE.loadJSONModel('periscope_stationary', function(object) {
         PeriscopeBlock.stationaryModel = object;
     });
-    utilTHREE.loadJSONModel('roof_stationary', function(object) {
+    GJS.utilTHREE.loadJSONModel('roof_stationary', function(object) {
         BuildingRoof.stationaryModel = object;
     });
-    utilTHREE.loadJSONModel('laser_cannon', function(object) {
+    GJS.utilTHREE.loadJSONModel('laser_cannon', function(object) {
         LaserCannon.model = object;
     });
 };
@@ -689,7 +689,7 @@ GoalBlock.prototype.handleLaser = function(laserSegmentLoc) {
 };
 
 GoalBlock.prototype.getModel = function() {
-    var shape = utilTHREE.createUShape(1.0, 0.1, 0.3);
+    var shape = GJS.utilTHREE.createUShape(1.0, 0.1, 0.3);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0, -0.05), new THREE.Vector3(0, 0, 0.05));
     var extrudeSettings = {
         steps: 1,

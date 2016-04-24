@@ -100,7 +100,7 @@ var Level = function(options) {
     this.objects.push(this.buildingCursor);
     this.updateChosenBuilding();
     
-    this.cameraControl = new OrbitCameraControl({
+    this.cameraControl = new GJS.OrbitCameraControl({
         camera: this.camera,
         lookAt: this.getLookAtCenter(),
         y: 5,
@@ -335,7 +335,7 @@ var GridTile = function(options) {
 GridTile.prototype = new ThreeSceneObject();
 
 GridTile.prototype.createGroundTileMesh = function() {
-    /*var groundShape = utilTHREE.createSquareWithHoleShape(GRID_SPACING, 1.4);
+    /*var groundShape = GJS.utilTHREE.createSquareWithHoleShape(GRID_SPACING, 1.4);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0));
     var extrudeSettings = {
         steps: 1,
@@ -347,7 +347,7 @@ GridTile.prototype.createGroundTileMesh = function() {
     var groundMesh = Level.streetsModel.clone();
     groundMesh.position.y = -0.39;
     
-    /*var sidewalkShape = utilTHREE.createSquareWithHoleShape(2.0, 1.2);
+    /*var sidewalkShape = GJS.utilTHREE.createSquareWithHoleShape(2.0, 1.2);
     var line = new THREE.LineCurve3(new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, -1.2, 0));
     var extrudeSettings = {
         steps: 1,
@@ -629,13 +629,13 @@ Level.sidewalkModel = null;
 Level.streetsModel = null;
 
 Level.loadAssets = function() {
-    utilTHREE.loadFont('aldo_the_apache_regular', function(font) {
+    GJS.utilTHREE.loadFont('aldo_the_apache_regular', function(font) {
         Level.font = font;
     });
-    utilTHREE.loadJSONModel('sidewalk', function(object) {
+    GJS.utilTHREE.loadJSONModel('sidewalk', function(object) {
         Level.sidewalkModel = object;
     });
-    utilTHREE.loadJSONModel('streets', function(object) {
+    GJS.utilTHREE.loadJSONModel('streets', function(object) {
         Level.streetsModel = object;
     });
 };

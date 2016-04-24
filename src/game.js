@@ -37,15 +37,19 @@ var Game = function(resizer, renderer) {
     
     this.levelNumber = 0;
     
-    var that = this;
-    var initLevel = function() {
-        var levelId = levelData.levelSequence[that.levelNumber];
-        that.loadLevel(levelId);
-        Game.music.playSingular(true);
-    };
-    utilTHREE.onAllLoaded(initLevel);
-    
     this.downIndex = -1;
+    
+    this.loadingBar = new GJS.LoadingBar();
+    this.initializedAfterLoad = false;
+};
+
+Game.prototype.loadedInit = function() {
+    if (!this.initializedAfterLoad) {
+        var levelId = levelData.levelSequence[this.levelNumber];
+        this.loadLevel(levelId);
+        Game.music.playSingular(true);
+        this.initializedAfterLoad = true;
+    }
 };
 
 Game.music = new GJS.Audio('laser_music');
@@ -149,6 +153,11 @@ Game.prototype.update = function(deltaTime) {
     }
     
     GJS.Audio.muteAll(Game.parameters.get('muteAudio'));
+    
+    if (this.loadingBar.update(deltaTime) && !this.initializedAfterLoad) {
+        this.loadedInit();
+        this.initializedAfterLoad = true;
+    }
 };
 
 Game.prototype.loadLevel = function(id) {
