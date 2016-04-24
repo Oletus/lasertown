@@ -88,9 +88,9 @@ var Level = function(options) {
     
     this.setupGrid();
 
-    this.state = new StateMachine({stateSet: Level.State, id: Level.State.INTRO});
-    this.introState = new StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
-    this.successState = new StateMachine({stateSet: Level.SuccessState, id: Level.SuccessState.LAUNCH});
+    this.state = new GJS.StateMachine({stateSet: Level.State, id: Level.State.INTRO});
+    this.introState = new GJS.StateMachine({stateSet: Level.IntroState, id: Level.IntroState.LAUNCH});
+    this.successState = new GJS.StateMachine({stateSet: Level.SuccessState, id: Level.SuccessState.LAUNCH});
     this.chosenBuilding = null;
     
     this.buildingCursor = new BuildingCursor({

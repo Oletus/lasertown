@@ -31,7 +31,7 @@ GJS.OrbitCameraControl = function(options) {
     };
     objectUtil.initWithDefaults(this, defaults, options);
     this.updateCamera();
-    this.state = new StateMachine({stateSet: GJS.OrbitCameraControl.State, id: GJS.OrbitCameraControl.State.CONTROLLABLE});
+    this.state = new GJS.StateMachine({stateSet: GJS.OrbitCameraControl.State, id: GJS.OrbitCameraControl.State.CONTROLLABLE});
 };
 
 GJS.OrbitCameraControl.State = {

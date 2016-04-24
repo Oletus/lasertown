@@ -383,6 +383,7 @@ colorUtil.blendLinearDodge = function(a, b) {
 
 var mathUtil = {
     mix: null,
+    mixSmooth: null,
     fmod: null,
     mixAngles: null,
     angleDifference: null,
@@ -390,7 +391,8 @@ var mathUtil = {
     ease: null,
     clamp: null,
     bezierLength: null,
-    randomInt: null
+    randomInt: null,
+    factorial: null
 };
 
 /**
@@ -404,10 +406,17 @@ mathUtil.mix = function(a, b, f) {
     return a + f * (b - a);
 };
 
+/**
+ * Smooth interpolation of a and b by weight f
+ * @param {number} a Value a, if f == 0.0, a is returned
+ * @param {number} b Value b, if f == 1.0, b is returned
+ * @param {number} f Interpolation weight
+ * @return {number} Interpolated value between a and b
+ */
 mathUtil.mixSmooth = function(a, b, f) {
    var f2 = (1 - Math.cos(f * Math.PI)) / 2;
    return mathUtil.mix(a, b, f2);
-}
+};
 
 /**
  * Modulus for floating point numbers.
@@ -540,7 +549,22 @@ mathUtil.bezierLength = function(x0, y0, x1, y1, x2, y2, steps) {
  * @return {number} Random integer between 0 and max, inclusive.
  */
 mathUtil.randomInt = function(max) {
-    return Math.floor(Math.random() * (max + 1));
+    if (mathUtil.random) {
+        return Math.floor(mathUtil.random() * (max + 1));
+    } else {
+        return Math.floor(Math.random() * (max + 1));
+    }
+};
+
+/**
+ * @param {number} n Positive integer.
+ * @return {number} Factorial of n.
+ */
+mathUtil.factorial = function(n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * mathUtil.factorial(n - 1);
 };
 
 /**

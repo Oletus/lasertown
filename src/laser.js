@@ -45,7 +45,7 @@ var Laser = function(options) {
     objectUtil.initWithDefaults(this, defaults, options);
     this.segments = [];
     this.laserCannon = new LaserCannon({laser: this, sceneParent: this.sceneParent, level: this.level});
-    this.state = new StateMachine({stateSet: Laser.State});
+    this.state = new GJS.StateMachine({stateSet: Laser.State});
 };
 
 Laser.State = {

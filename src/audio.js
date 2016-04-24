@@ -1,7 +1,7 @@
 'use strict';
 
-if (window.GJS === undefined) {
-    window.GJS = {};
+if (typeof GJS === "undefined") {
+    var GJS = {};
 }
 
 /**
@@ -119,6 +119,9 @@ GJS.Audio.loadedCount = 0;
  * Name specified as string to support Closure compiler together with loadingbar.js.
  */
 GJS.Audio['loadedFraction'] = function() {
+    if (GJS.Audio.allAudio.length === 0) {
+        return 1.0;
+    }
     return GJS.Audio.loadedCount / GJS.Audio.allAudio.length;
 };
 

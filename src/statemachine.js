@@ -2,6 +2,10 @@
 
 // Requires utiljs.js
 
+if (typeof GJS === "undefined") {
+    var GJS = {};
+}
+
 /**
  * A very simple state machine. Tracks state and the time that the machine has been in that state.
  * @constructor
@@ -10,7 +14,7 @@
  *     { IDLE: 0, RUNNING: 1 }
  *   id: Number that identifies the initial state.
  */
-var StateMachine = function(options) {
+GJS.StateMachine = function(options) {
     var defaults = {
         id: null,
         stateSet: {}
@@ -30,7 +34,7 @@ var StateMachine = function(options) {
 /**
  * @param {number} newStateId Id of the new state.
  */
-StateMachine.prototype.change = function(newStateId) {
+GJS.StateMachine.prototype.change = function(newStateId) {
     this.id = newStateId;
     this.time = 0;
 };
@@ -39,6 +43,6 @@ StateMachine.prototype.change = function(newStateId) {
  * Call this regularly to update the state machine.
  * @param {number} deltaTime Time change since last call to this function.
  */
-StateMachine.prototype.update = function(deltaTime) {
+GJS.StateMachine.prototype.update = function(deltaTime) {
     this.time += deltaTime;
 };
