@@ -8,9 +8,11 @@ var parseSpec = function(spec) {
     return _parsedSpec;
 };
 
-var Game = function(resizer, renderer) {
+var Game = function(resizer, renderer, loadingBar) {
     this.resizer = resizer;
     this.renderer = renderer;
+    this.loadingBar = loadingBar;
+    this.initializedAfterLoad = false;
     this.renderer.setClearColor( 0x888888, 1);
     
     this.time = 0;
@@ -38,9 +40,6 @@ var Game = function(resizer, renderer) {
     this.levelNumber = 0;
     
     this.downIndex = -1;
-    
-    this.loadingBar = new GJS.LoadingBar();
-    this.initializedAfterLoad = false;
 };
 
 Game.prototype.loadedInit = function() {
@@ -135,6 +134,9 @@ Game.prototype.render = function() {
         this.resizer.canvas.style.opacity = mathUtil.clamp(0.0, 1.0, 1.0 - fadeOpacity);
         this.level.render(this.renderer);
     }
+    if (Game.parameters.get('postLD')) {
+        return this.renderer;
+    }
 };
 
 Game.prototype.update = function(deltaTime) {
@@ -154,7 +156,7 @@ Game.prototype.update = function(deltaTime) {
     
     GJS.Audio.muteAll(Game.parameters.get('muteAudio'));
     
-    if (this.loadingBar.update(deltaTime) && !this.initializedAfterLoad) {
+    if (this.loadingBar.finished() && !this.initializedAfterLoad) {
         this.loadedInit();
         this.initializedAfterLoad = true;
     }
@@ -222,7 +224,8 @@ window['start'] = function() {
         }
     });
     
-    game = new Game(resizer, renderer);
+    var loadingBar = new GJS.LoadingBar();
+    game = new Game(resizer, renderer, loadingBar);
     var eventListener = resizer.createPointerEventListener(game, false);
     var postLD = Game.parameters.get('postLD');
     resizer.canvas.addEventListener('mousemove', eventListener);
@@ -236,5 +239,5 @@ window['start'] = function() {
         resizer.canvas.addEventListener('touchcancel', eventListener);
     }
     
-    startMainLoop([resizer, game, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
+    startMainLoop([resizer, game, loadingBar, resizer.pixelator()], {debugMode: DEBUG_MAIN_LOOP});
 };
