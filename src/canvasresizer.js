@@ -1,12 +1,16 @@
 'use strict';
 
+if (typeof GJS === "undefined") {
+    var GJS = {};
+}
+
 /**
  * A class to help keeping canvas size suitable for the window or parent
  * element size and screen resolution.
  * @constructor
  * @param {Object} options Object with the following optional keys:
  *  canvas: HTMLCanvasElement (one is created by default)
- *  mode: CanvasResizer.Mode (defaults to filling the window)
+ *  mode: GJS.CanvasResizer.Mode (defaults to filling the window)
  *  width: number Width of the canvas coordinate space.
  *  height: number Height of the canvas coordinate space.
  *  parentElement: HTMLElement (defaults to the document body)
@@ -22,10 +26,10 @@
  *      properties are changed. Can be used to adjust Three.js renderer
  *      parameters, for example.
  */
-var CanvasResizer = function(options) {
+GJS.CanvasResizer = function(options) {
     var defaults = {
         canvas: null,
-        mode: CanvasResizer.Mode.DYNAMIC,
+        mode: GJS.CanvasResizer.Mode.DYNAMIC,
         width: 16,
         height: 9,
         parentElement: document.body,
@@ -55,7 +59,7 @@ var CanvasResizer = function(options) {
     
     this.canvasWidthToHeight = this.width / this.height;
 
-    if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION) {
+    if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION) {
         this._setCanvasSize(this.width, this.height);
     }
 
@@ -78,7 +82,7 @@ var CanvasResizer = function(options) {
         // Assume that wrapper already wraps the canvas - don't re-append the
         // canvas to the wrapper since the wrapper might have other children.
         if (this.canvas.parentNode !== this.wrapperElement) {
-            console.log("Warning: canvas is not a child of wrapperElement in CanvasResizer");
+            console.log("Warning: canvas is not a child of wrapperElement in GJS.CanvasResizer");
         }
     }
     this.parentElement.style.position = 'relative'; // Needed for workaround when "imageRendering" is not supported.
@@ -97,7 +101,7 @@ var CanvasResizer = function(options) {
  * @param {number} height Height to set.
  * @protected
  */
-CanvasResizer.prototype._setCanvasSize = function(width, height) {
+GJS.CanvasResizer.prototype._setCanvasSize = function(width, height) {
     this.canvas.width = width;
     this.canvas.height = height;
     if (this.setCanvasSizeCallback !== null) {
@@ -112,7 +116,7 @@ CanvasResizer.prototype._setCanvasSize = function(width, height) {
  *                      excluded from forwarding. Defaults to not excluding anything.
  * @return {Object} Wrapped object.
  */
-CanvasResizer.wrap = function(toWrap, excludeFromForwarding) {
+GJS.CanvasResizer.wrap = function(toWrap, excludeFromForwarding) {
     if (excludeFromForwarding === undefined) {
         excludeFromForwarding = function() { return false; };
     }
@@ -136,7 +140,7 @@ CanvasResizer.wrap = function(toWrap, excludeFromForwarding) {
     return wrapper;
 };
 
-CanvasResizer.Mode = {
+GJS.CanvasResizer.Mode = {
     // Fixed amount of pixels, rendered pixelated:
     FIXED_RESOLUTION: 0,
     // Fixed amount of pixels, rendered interpolated:
@@ -163,7 +167,7 @@ CanvasResizer.Mode = {
 /**
  * Resize callback.
  */
-CanvasResizer.prototype.resize = function() {
+GJS.CanvasResizer.prototype.resize = function() {
     // Resize only on a render call to avoid flicker from changing canvas
     // size.
     this.resizeOnNextRender = true;
@@ -172,14 +176,14 @@ CanvasResizer.prototype.resize = function() {
 /**
  * Do nothing. This function exists just for mainloop.js compatibility.
  */
-CanvasResizer.prototype.update = function() {
+GJS.CanvasResizer.prototype.update = function() {
 };
 
 /**
  * @return {Object} An object with render() and update() functions. render() will display an upscaled pixelated
- * canvas instead of the regular CanvasResizer canvas when supporting the CanvasResizer mode requires that.
+ * canvas instead of the regular GJS.CanvasResizer canvas when supporting the GJS.CanvasResizer mode requires that.
  */
-CanvasResizer.prototype.pixelator = function() {
+GJS.CanvasResizer.prototype.pixelator = function() {
     if (this._pixelator) {
         return this._pixelator;
     }
@@ -269,7 +273,7 @@ CanvasResizer.prototype.pixelator = function() {
     this._pixelator = {
         update: function() {},
         render: function() {
-            if ((that.mode === CanvasResizer.Mode.FIXED_RESOLUTION ||
+            if ((that.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION ||
                  that._isInMinMode()) &&
                 that._canvasPixelationRatio >= that.maxInterpolatedScale) {
                 if (!that.canvas.style.imageRendering) {
@@ -294,18 +298,18 @@ CanvasResizer.prototype.pixelator = function() {
  * Call this function in the beginning of rendering a frame to update
  * the canvas size. Compatible with mainloop.js.
  */
-CanvasResizer.prototype.render = function() {
+GJS.CanvasResizer.prototype.render = function() {
     if (this.resizeOnNextRender) {
         var parentProperties = this._getParentProperties();
         var parentWidth = parentProperties.width;
         var parentHeight = parentProperties.height;
         var parentWidthToHeight = parentProperties.widthToHeight;
-        if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION ||
+        if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION ||
             this._isInMinMode() ||
-            this.mode === CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
+            this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
             this._resizeFixedResolution();
-        } else if (this.mode === CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM ||
-                   this.mode === CanvasResizer.Mode.FIXED_ASPECT_RATIO) {
+        } else if (this.mode === GJS.CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM ||
+                   this.mode === GJS.CanvasResizer.Mode.FIXED_ASPECT_RATIO) {
             if (parentWidthToHeight > this.canvasWidthToHeight) {
                 // Parent is wider, so there will be empty space on the left and right
                 this._setCanvasSize(Math.floor(this.canvasWidthToHeight * parentHeight), parentHeight);
@@ -320,7 +324,7 @@ CanvasResizer.prototype.render = function() {
             this.canvas.style.width = this.canvas.width + 'px';
             this.canvas.style.height = this.canvas.height + 'px';
             this.canvas.style.marginBottom = '-5px'; // This is to work around a bug in Firefox 38
-        } else { // CanvasResizer.Mode.DYNAMIC
+        } else { // GJS.CanvasResizer.Mode.DYNAMIC
             this._setCanvasSize(parentWidth, parentHeight);
             this.canvas.style.width = parentWidth + 'px';
             this.canvas.style.height = parentHeight + 'px';
@@ -332,12 +336,13 @@ CanvasResizer.prototype.render = function() {
             this.wrapperElement.style.height = this.canvas.style.height;
             this.wrapperElement.style.marginTop = this.canvas.style.marginTop;
             this.wrapperElement.style.marginLeft = this.canvas.style.marginLeft;
+            this.wrapperElement.style.position = 'relative';
             this.canvas.style.marginTop = '0';
             this.canvas.style.marginLeft = '0';
         }
         this.resizeOnNextRender = false;
     }
-    if (this.mode == CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
+    if (this.mode == GJS.CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
         var ctx = this.canvas.getContext('2d');
         if (ctx === null) {
             throw "FIXED_COORDINATE_SYSTEM mode can only be used with a 2D canvas";
@@ -347,7 +352,7 @@ CanvasResizer.prototype.render = function() {
 
         // Wrap the context so that when ctx.canvas.width/height is queried, they return the coordinate system width/height.
         if (this._wrapCtx == null) {
-            var wrapCtx = CanvasResizer.wrap(ctx, function(prop) {
+            var wrapCtx = GJS.CanvasResizer.wrap(ctx, function(prop) {
                 return (prop.indexOf('webkit') === 0 || prop === 'canvas');
             });
 
@@ -363,7 +368,7 @@ CanvasResizer.prototype.render = function() {
         }
         return this._wrapCtx;
     }
-    if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION ||
+    if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION ||
         this._isInMinMode()) {
         var ctx = this.canvas.getContext('2d');
         if (ctx === null) {
@@ -372,7 +377,7 @@ CanvasResizer.prototype.render = function() {
         }
         if (this._wrapCtxPixelate == null) {
             var pixelatingStack = [true];
-            var wrapCtx = CanvasResizer.wrap(ctx, function(prop) {
+            var wrapCtx = GJS.CanvasResizer.wrap(ctx, function(prop) {
                 return (prop.indexOf('webkit') === 0 || 
                        prop == 'translate' || prop == 'scale' || prop == 'rotate' ||
                        prop == 'transform' || prop == 'setTransform' ||
@@ -424,7 +429,7 @@ CanvasResizer.prototype.render = function() {
  * @return {Object} Canvas bounding client rect.
  * @protected
  */
-CanvasResizer.prototype._getCanvasBoundingClientRect = function() {
+GJS.CanvasResizer.prototype._getCanvasBoundingClientRect = function() {
     return this.canvas.getBoundingClientRect();
 };
 
@@ -440,7 +445,7 @@ CanvasResizer.prototype._getCanvasBoundingClientRect = function() {
  * @return {Object} Object with x and y keys for horizontal and vertical
  * positions in the canvas coordinate space.
  */
-CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
+GJS.CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
     var rect = this._getCanvasBoundingClientRect();
     var x, y;
     if (event.touches !== undefined && event.touches.length > 0) {
@@ -464,7 +469,7 @@ CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
     var yRel = y - rect.top + 0.5;
     var coordWidth = this.canvas.width;
     var coordHeight = this.canvas.height;
-    if (this.mode == CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
+    if (this.mode == GJS.CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
         coordWidth = this.width;
         coordHeight = this.height;
     }
@@ -472,10 +477,14 @@ CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
         xRel *= coordWidth / rect.width;
         yRel *= coordHeight / rect.height;
     }
+    return GJS.CanvasResizer._createVec2(xRel, yRel);
+};
+
+GJS.CanvasResizer._createVec2 = function(x, y) {
     if (typeof Vec2 !== 'undefined') {
-        return new Vec2(xRel, yRel);
+        return new Vec2(x, y);
     } else {
-        return {x: xRel, y: yRel};
+        return {x: x, y: y};
     }
 };
 
@@ -486,7 +495,7 @@ CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
  * @param {boolean} listenOnCanvas Automatically add listeners on the canvas.
  * @return {function} Function to be added as a mouse and touch listener to elements (for example the canvas element).
  */
-CanvasResizer.prototype.createPointerEventListener = function(callbackObject, listenOnCanvas) {
+GJS.CanvasResizer.prototype.createPointerEventListener = function(callbackObject, listenOnCanvas) {
     var that = this;
 
     var coordinates = [
@@ -502,8 +511,8 @@ CanvasResizer.prototype.createPointerEventListener = function(callbackObject, li
         var index = coordinates.length;
         coordinateIndices[alwaysTracked[i]] = index;
         coordinates.push({
-            current: new Vec2(-Infinity, -Infinity),
-            lastDown: new Vec2(-Infinity, -Infinity),
+            current: GJS.CanvasResizer._createVec2(-Infinity, -Infinity),
+            lastDown: GJS.CanvasResizer._createVec2(-Infinity, -Infinity),
             isDown: false,
             index: index
         });
@@ -616,7 +625,7 @@ CanvasResizer.prototype.createPointerEventListener = function(callbackObject, li
  * @return {HTMLCanvasElement} The canvas element this resizer is using.
  * If no canvas element was passed in on creation, one has been created.
  */
-CanvasResizer.prototype.getCanvas = function() {
+GJS.CanvasResizer.prototype.getCanvas = function() {
     return this.canvas;
 };
 
@@ -627,7 +636,7 @@ CanvasResizer.prototype.getCanvas = function() {
  * @param {number} width New width for the canvas element.
  * @param {number} height New height for the canvas element.
  */
-CanvasResizer.prototype.changeCanvasDimensions = function(width, height) {
+GJS.CanvasResizer.prototype.changeCanvasDimensions = function(width, height) {
     this.width = width;
     this.height = height;
     this.canvasWidthToHeight = this.width / this.height;
@@ -636,9 +645,9 @@ CanvasResizer.prototype.changeCanvasDimensions = function(width, height) {
 
 /**
  * Change the resizing mode.
- * @param {CanvasResizer.Mode} mode New mode to use.
+ * @param {GJS.CanvasResizer.Mode} mode New mode to use.
  */
-CanvasResizer.prototype.changeMode = function(mode) {
+GJS.CanvasResizer.prototype.changeMode = function(mode) {
     this.mode = mode;
     if ('imageRendering' in this.canvas.style) {
         this.canvas.style.imageRendering = 'auto';
@@ -649,12 +658,12 @@ CanvasResizer.prototype.changeMode = function(mode) {
 /**
  * @return {number} the scale at which the canvas coordinate space is drawn.
  */
-CanvasResizer.prototype.getScale = function() {
-    if (this.mode === CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
+GJS.CanvasResizer.prototype.getScale = function() {
+    if (this.mode === GJS.CanvasResizer.Mode.FIXED_COORDINATE_SYSTEM) {
         return this.canvas.width / this.width;
-    } else if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION ||
+    } else if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION ||
                this._isInMinMode() ||
-               this.mode === CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED)
+               this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED)
     {
         return this._scale;
     } else {
@@ -667,7 +676,7 @@ CanvasResizer.prototype.getScale = function() {
  * @return {Object} Object containing keys width, height, and widthToHeight.
  * @protected
  */
-CanvasResizer.prototype._getParentProperties = function() {
+GJS.CanvasResizer.prototype._getParentProperties = function() {
     var parentProperties = {};
     if (this.parentElement === document.body) {
         parentProperties.width = window.innerWidth;
@@ -680,20 +689,20 @@ CanvasResizer.prototype._getParentProperties = function() {
     return parentProperties;
 };
 
-CanvasResizer.prototype._isInMinMode = function() {
-    return this.mode === CanvasResizer.Mode.MINIMUM_RESOLUTION ||
-           this.mode === CanvasResizer.Mode.MINIMUM_HEIGHT ||
-           this.mode === CanvasResizer.Mode.MINIMUM_WIDTH;
+GJS.CanvasResizer.prototype._isInMinMode = function() {
+    return this.mode === GJS.CanvasResizer.Mode.MINIMUM_RESOLUTION ||
+           this.mode === GJS.CanvasResizer.Mode.MINIMUM_HEIGHT ||
+           this.mode === GJS.CanvasResizer.Mode.MINIMUM_WIDTH;
 };
 
 /**
  * Resize the canvas in one of the fixed resolution modes.
  * @protected
  */
-CanvasResizer.prototype._resizeFixedResolution = function() {
-    if (this.mode !== CanvasResizer.Mode.FIXED_RESOLUTION &&
+GJS.CanvasResizer.prototype._resizeFixedResolution = function() {
+    if (this.mode !== GJS.CanvasResizer.Mode.FIXED_RESOLUTION &&
         !this._isInMinMode() &&
-        this.mode !== CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
+        this.mode !== GJS.CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
         return;
     }
     this._setCanvasSize(this.width, this.height);
@@ -703,7 +712,7 @@ CanvasResizer.prototype._resizeFixedResolution = function() {
     var parentWidthToHeight = parentProperties.widthToHeight;
     var styleWidth = 0;
     var styleHeight = 0;
-    if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION ||
+    if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION ||
         this._isInMinMode()) {
         var maxWidth = parentWidth * window.devicePixelRatio;
         var maxHeight = parentHeight * window.devicePixelRatio;
@@ -742,10 +751,10 @@ CanvasResizer.prototype._resizeFixedResolution = function() {
         if (this._isInMinMode()) {
             var w = this.width;
             var h = this.height;
-            while (scale * (w + 1) <= maxWidth && this.mode !== CanvasResizer.Mode.MINIMUM_HEIGHT) {
+            while (scale * (w + 1) <= maxWidth && this.mode !== GJS.CanvasResizer.Mode.MINIMUM_HEIGHT) {
                 w++;
             }
-            while (scale * (h + 1) <= maxHeight && this.mode !== CanvasResizer.Mode.MINIMUM_WIDTH) {
+            while (scale * (h + 1) <= maxHeight && this.mode !== GJS.CanvasResizer.Mode.MINIMUM_WIDTH) {
                 h++;
             }
             styleWidth = w * scale / window.devicePixelRatio;
@@ -753,7 +762,7 @@ CanvasResizer.prototype._resizeFixedResolution = function() {
             this._setCanvasSize(w, h);
         }
         this._canvasPixelationRatio = scale;
-    } else if (this.mode === CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
+    } else if (this.mode === GJS.CanvasResizer.Mode.FIXED_RESOLUTION_INTERPOLATED) {
         if (parentWidthToHeight > this.canvasWidthToHeight) {
             styleHeight = parentHeight;
             styleWidth = Math.floor(this.canvasWidthToHeight * styleHeight);

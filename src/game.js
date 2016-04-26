@@ -211,9 +211,28 @@ window['start'] = function() {
     
     var game;
     
-    var resizer = new CanvasResizer({
-        mode: CanvasResizer.Mode.FIXED_ASPECT_RATIO,
+    var canvasWrapper = document.createElement('div');
+    canvasWrapper.appendChild(renderer.domElement);
+    
+    var postLD = Game.parameters.get('postLD');
+    
+    if (postLD) {
+        var fsButton = GJS.commonUI.createFullscreenButton({
+            fullscreenElement: document.body,
+            fillStyle: '#ffffff',
+            width: Math.floor(document.body.getBoundingClientRect().width * 0.04)
+        });
+        fsButton.style.position = 'absolute';
+        fsButton.style.right = '10px';
+        fsButton.style.top = '10px';
+        fsButton.style.opacity = '0.2';
+        canvasWrapper.appendChild(fsButton);
+    }
+    
+    var resizer = new GJS.CanvasResizer({
+        mode: GJS.CanvasResizer.Mode.FIXED_ASPECT_RATIO,
         canvas: renderer.domElement,
+        wrapperElement: canvasWrapper,
         width: 16,
         height: 9,
         setCanvasSizeCallback: function(width, height) {
@@ -227,7 +246,6 @@ window['start'] = function() {
     var loadingBar = new GJS.LoadingBar();
     game = new Game(resizer, renderer, loadingBar);
     var eventListener = resizer.createPointerEventListener(game, false);
-    var postLD = Game.parameters.get('postLD');
     resizer.canvas.addEventListener('mousemove', eventListener);
     resizer.canvas.addEventListener('mousedown', eventListener);
     resizer.canvas.addEventListener('mouseup', eventListener);
