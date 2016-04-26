@@ -1,5 +1,9 @@
 'use strict';
 
+if (typeof GJS === "undefined") {
+    var GJS = {};
+}
+
 var arrayUtil = {}; // Utilities for working with JS arrays
 var stringUtil = {}; // Utilities for working with JS strings
 var objectUtil = {}; // Utilities for working with JS objects
@@ -246,8 +250,9 @@ objectUtil.wrap = function(toWrap, excludeFromForwarding) {
 
 /**
  * Request fullscreen on a given element.
+ * @param {HTMLElement} elem Element to make fullscreen.
  */
-var requestFullscreen = function(elem) {
+GJS.requestFullscreen = function(elem) {
     if (elem.requestFullscreen) {
         elem.requestFullscreen();
     } else if (elem.msRequestFullscreen) {
@@ -260,13 +265,26 @@ var requestFullscreen = function(elem) {
 };
 
 /**
+ * Exit fullscreen.
+ */
+GJS.exitFullscreen = function() {
+    if(document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if(document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if(document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    }
+};
+
+/**
  * Change a value towards zero by a certain delta value.
  * @param {number} value Value to change.
  * @param {number} delta How much to change the value.
  * @return {number} Changed value.
  */
-var towardsZero = function(value, delta) {
-    return towardsValue(value, 0, delta);
+GJS.towardsZero = function(value, delta) {
+    return GJS.towardsValue(value, 0, delta);
 };
 
 /**
@@ -276,7 +294,7 @@ var towardsZero = function(value, delta) {
  * @param {number} delta How much to change the value.
  * @return {number} Changed value.
  */
-var towardsValue = function(value, targetValue, delta) {
+GJS.towardsValue = function(value, targetValue, delta) {
     if (value > targetValue) {
         value -= delta;
         if (value < targetValue)
@@ -290,11 +308,11 @@ var towardsValue = function(value, targetValue, delta) {
     return value;
 };
 
-var debugLog = function(output) {
+GJS.debugLog = function(output) {
     if ( window.console && console.log ) {
         console.log(output);
     }
-}
+};
 
 
 /*-----------*/

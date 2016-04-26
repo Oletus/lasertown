@@ -63,7 +63,7 @@ Building.prototype.update = function(deltaTime) {
         this.requestedPlaySound = false;
     }
     this.topY += this.deltaY;
-    //this.topY = towardsValue(this.topY, this.topYTarget, deltaTime * 7);
+    //this.topY = GJS.towardsValue(this.topY, this.topYTarget, deltaTime * 7);
     for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].topY = this.topY - i;
         this.blocks[i].update(deltaTime);
