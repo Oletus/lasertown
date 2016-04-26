@@ -332,7 +332,7 @@ var GridTile = function(options) {
     this.addToScene();
 };
 
-GridTile.prototype = new ThreeSceneObject();
+GridTile.prototype = new GJS.ThreeSceneObject();
 
 GridTile.prototype.createGroundTileMesh = function() {
     /*var groundShape = GJS.utilTHREE.createSquareWithHoleShape(GRID_SPACING, 1.4);
@@ -413,7 +413,7 @@ Level.Sign = function(options) {
     this.addToScene();
 };
 
-Level.Sign.prototype = new ThreeSceneObject();
+Level.Sign.prototype = new GJS.ThreeSceneObject();
 
 Level.Sign.prototype.setText = function(text) {
     var textGeo = new THREE.TextGeometry( text, {

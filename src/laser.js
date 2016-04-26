@@ -239,7 +239,7 @@ var LaserCannon = function(options) {
     this.addToScene();
 };
 
-LaserCannon.prototype = new ThreeSceneObject();
+LaserCannon.prototype = new GJS.ThreeSceneObject();
 
 LaserCannon.model = null;
 
@@ -283,7 +283,7 @@ var LaserSegment = function(options) {
     this.addToScene();
 };
 
-LaserSegment.prototype = new ThreeSceneObject();
+LaserSegment.prototype = new GJS.ThreeSceneObject();
 
 LaserSegment.outerMaterial = (function() {
     var material = new THREE.MeshPhongMaterial( { color: 0x0, emissive: 0xff5555 } );

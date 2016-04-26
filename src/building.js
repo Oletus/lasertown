@@ -289,7 +289,7 @@ Building.GoalIndicator = function(options) {
     });
 };
 
-Building.GoalIndicator.prototype = new ThreeSceneObject();
+Building.GoalIndicator.prototype = new GJS.ThreeSceneObject();
 
 Building.GoalIndicator.prototype.update = function(deltaTime) {
     this.textMesh.rotation.y += deltaTime;
@@ -333,7 +333,7 @@ var BuildingCursor = function(options) {
     });
 };
     
-BuildingCursor.prototype = new ThreeSceneObject();
+BuildingCursor.prototype = new GJS.ThreeSceneObject();
 
 BuildingCursor.material = function(color, emissiveColor) {
     if (emissiveColor === undefined) emissiveColor = 0x448888;
@@ -422,7 +422,7 @@ var BuildingCursorArrow = function(options) {
     this.addToScene();
 };
 
-BuildingCursorArrow.prototype = new ThreeSceneObject();
+BuildingCursorArrow.prototype = new GJS.ThreeSceneObject();
 
 BuildingCursorArrow.prototype.createArrowMesh = function() {
     var shape = GJS.utilTHREE.createArrowShape(0.6, 0.4, 0.3, 0.2);
@@ -456,7 +456,7 @@ var BuildingRoof = function(options) {
     this.updateModel();
 };
 
-BuildingRoof.prototype = new ThreeSceneObject();
+BuildingRoof.prototype = new GJS.ThreeSceneObject();
 
 BuildingRoof.prototype.setStationary = function(stationary) {
     this.stationary = stationary;
@@ -490,7 +490,7 @@ var BuildingBlock = function() {
     
 };
 
-BuildingBlock.prototype = new ThreeSceneObject();
+BuildingBlock.prototype = new GJS.ThreeSceneObject();
 
 BuildingBlock.prototype.initBuildingBlock = function(options) {
     var defaults = {
