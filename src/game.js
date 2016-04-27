@@ -216,17 +216,15 @@ window['start'] = function() {
     
     var postLD = Game.parameters.get('postLD');
     
-    if (postLD) {
-        var fsButton = GJS.commonUI.createFullscreenButton({
+    if (postLD) {        
+        GJS.commonUI.createUI({
+            parent: canvasWrapper,
             fullscreenElement: document.body,
+            twitterAccount: 'Oletus',
             fillStyle: '#ffffff',
-            width: Math.floor(document.body.getBoundingClientRect().width * 0.04)
+            opacity: 0.2,
+            scale: 0.8
         });
-        fsButton.style.position = 'absolute';
-        fsButton.style.right = '10px';
-        fsButton.style.top = '10px';
-        fsButton.style.opacity = '0.2';
-        canvasWrapper.appendChild(fsButton);
     }
     
     var resizer = new GJS.CanvasResizer({
