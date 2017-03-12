@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Laser Town game",
   "repository": "https://github.com/Oletus/lasertown.git",
-  "license": "MIT",
   "dependencies": {
     "howler": "^1.1.28",
     "tween": "^0.9.0"
