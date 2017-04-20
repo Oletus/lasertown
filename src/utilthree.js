@@ -27,7 +27,7 @@ GJS.utilTHREE.createdCount = 0;
 GJS.utilTHREE.loadedCount = 0;
 
 /**
- * @return {number} Amount of GJS.Audio objects that have been fully loaded per amount that has been created.
+ * @return {number} Amount of three.js models/fonts that have been fully loaded per amount that has been created.
  * Name specified as string to support Closure compiler together with loadingbar.js.
  */
 GJS.utilTHREE['loadedFraction'] = function() {
