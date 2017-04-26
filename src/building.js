@@ -271,17 +271,14 @@ Building.GoalIndicator = function(options) {
 
     this.origin = new THREE.Object3D();
 
-    var textGeo = new THREE.TextGeometry( 'GOAL', {
-        font: Level.font,
-        size: 0.8,
-        height: 0.3,
-        curveSegments: 1,
-        bevelEnabled: false,
+    this.textObject = new GJS.ThreeExtrudedTextObject({
+        sceneParent: this.origin,
+        material: BuildingCursor.material(0xcc9966, 0xffbb77),
+        string: 'GOAL',
+        extrusionHeight: 0.3 / 0.8
     });
-    textGeo.center();
-    var material = BuildingCursor.material(0xcc9966, 0xffbb77);
-    this.textMesh = new THREE.Mesh(textGeo, material);
-    this.origin.add(this.textMesh);
+    this.textObject.object.scale.multiplyScalar(0.8);
+    this.textObject.addToScene();
 
     this.initThreeSceneObject({
         object: this.origin,
@@ -292,10 +289,10 @@ Building.GoalIndicator = function(options) {
 Building.GoalIndicator.prototype = new GJS.ThreeSceneObject();
 
 Building.GoalIndicator.prototype.update = function(deltaTime) {
-    this.textMesh.rotation.y += deltaTime;
+    this.textObject.object.rotation.y += deltaTime;
     this.origin.position.x = this.level.gridXToWorld(this.building.gridX);
     this.origin.position.z = this.level.gridZToWorld(this.building.gridZ);
-    this.origin.position.y = this.building.topY + 1.5;
+    this.origin.position.y = this.building.topY + 0.9;
 };
 
 

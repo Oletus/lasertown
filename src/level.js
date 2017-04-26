@@ -400,7 +400,7 @@ Level.Sign = function(options) {
     this.parent.add(boxMesh);
     
     this.textParent = new THREE.Object3D();
-    this.textParent.position.y = 0.3;
+    this.textParent.position.y = -1.0;
     this.parent.add(this.textParent);
     
     this.initThreeSceneObject({
@@ -408,7 +408,25 @@ Level.Sign = function(options) {
         object: this.parent
     });
     
-    this.setSecondaryText('LD35 GAME BY OLLI ETUAHO, VALTTERI HEINONEN AND ANASTASIA DIATLOVA');
+    this.primaryText = new GJS.ThreeExtrudedTextObject({
+        sceneParent: this.textParent,
+        material: new THREE.MeshPhongMaterial( { color: 0x333333, specular: 0x222222 } ),
+        extrusionHeight: 0.05
+    });
+    this.primaryText.object.position.z = 0.1;
+    this.primaryText.object.scale.multiplyScalar(2.0);
+    this.primaryText.addToScene();
+
+    this.secondaryText = new GJS.ThreeExtrudedTextObject({
+        sceneParent: this.textParent,
+        material: new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0x222222 } ),
+        string: 'LD35 GAME BY OLLI ETUAHO, VALTTERI HEINONEN AND ANASTASIA DIATLOVA',
+        extrusionHeight: 0.05 / 0.35
+    });
+    this.secondaryText.object.position.z = 0.05;
+    this.secondaryText.object.position.y = -0.425;
+    this.secondaryText.object.scale.multiplyScalar(0.35);
+    this.secondaryText.addToScene();
     
     this.addToScene();
 };
@@ -416,36 +434,7 @@ Level.Sign = function(options) {
 Level.Sign.prototype = new GJS.ThreeSceneObject();
 
 Level.Sign.prototype.setText = function(text) {
-    var textGeo = new THREE.TextGeometry( text, {
-        font: Level.font,
-        size: 2,
-        height: 0.1,
-        curveSegments: 1,
-        bevelEnabled: false,
-    });
-    textGeo.center();
-    var material = new THREE.MeshPhongMaterial( { color: 0x333333, specular: 0x222222 } );
-    var textMesh = new THREE.Mesh( textGeo, material );
-    textMesh.position.z = 0.1;
-    
-    this.textParent.children = [];
-    this.textParent.add(textMesh);
-};
-
-Level.Sign.prototype.setSecondaryText = function(text) {
-    var textGeo = new THREE.TextGeometry( text, {
-        font: Level.font,
-        size: 0.35,
-        height: 0.05,
-        curveSegments: 1,
-        bevelEnabled: false,
-    });
-    textGeo.center();
-    var material = new THREE.MeshPhongMaterial( { color: 0x888888, specular: 0x222222 } );
-    var textMesh = new THREE.Mesh( textGeo, material );
-    textMesh.position.z = 0.05;
-    textMesh.position.y = -1.2;
-    this.parent.add(textMesh);
+    this.primaryText.setString(text);
 };
 
 Level.prototype.updateSpotLightTarget = function() {
@@ -624,13 +613,12 @@ Level.prototype.downPress = function() {
     }
 };
 
-Level.font = null;
 Level.sidewalkModel = null;
 Level.streetsModel = null;
 
 Level.loadAssets = function() {
     GJS.utilTHREE.loadFont('aldo_the_apache_regular', function(font) {
-        Level.font = font;
+        GJS.ThreeExtrudedTextObject.defaultFont = font;
     });
     GJS.utilTHREE.loadJSONModel('sidewalk', function(object) {
         Level.sidewalkModel = object;
