@@ -7,6 +7,7 @@ if (typeof GJS === "undefined") {
 var arrayUtil = {}; // Utilities for working with JS arrays
 var stringUtil = {}; // Utilities for working with JS strings
 var objectUtil = {}; // Utilities for working with JS objects
+var querystringUtil = {}; // Utilities for working with the browser querystring
 
 /**
  * Random function. Prefers using mathUtil.random() if available, falls back to Math.random().
@@ -200,6 +201,35 @@ stringUtil.capitalizeFirstLetter = function(string) {
 };
 
 /**
+ * Split text into rows. The text is split at spaces.
+ * @param {string} toSplit String to split.
+ * @param {number} maxRowLength Maximum length of row in characters. If < 0, don't split.
+ */
+stringUtil.splitToRows = function(toSplit, maxRowLength) {
+    var splitRows = toSplit;
+    if (!(splitRows instanceof Array)) {
+        if (maxRowLength < 0) {
+            splitRows = [toSplit];
+        } else {
+            splitRows = [];
+            var rowStartIndex = 0;
+            var spaceIndex = toSplit.indexOf(' ');
+            while (toSplit.length - rowStartIndex > maxRowLength) {
+                var prevSpaceIndex = spaceIndex;
+                while (spaceIndex - rowStartIndex < maxRowLength && spaceIndex !== -1) {
+                    prevSpaceIndex = spaceIndex;
+                    spaceIndex = toSplit.indexOf(' ', prevSpaceIndex + 1);
+                }
+                splitRows.push(toSplit.substring(rowStartIndex, prevSpaceIndex));
+                rowStartIndex = prevSpaceIndex + 1;
+            }
+            splitRows.push(toSplit.substring(rowStartIndex));
+        }
+    }
+    return splitRows;
+};
+
+/**
  * Initialize an object with default values.
  * @param {Object} obj Object to set properties on.
  * @param {Object} defaults Default properties. Every property needs to have a default value here.
@@ -246,6 +276,31 @@ objectUtil.wrap = function(toWrap, excludeFromForwarding) {
     return wrapper;
 };
 
+/**
+ * Get the value of the given querystring key else return undefined.
+ * @param {String} key Key to search for in the querystring.
+ * @param {String} [querystring] Querystring to search. If undefined then falls back to window.location.search.
+ * @return {(String|undefined)} Value as a string.
+ */
+querystringUtil.get = function(key, querystring) {
+    querystring = querystring || window.location.search;
+
+    if (querystring.indexOf('?') === 0) {
+        querystring = querystring.substring(1);  // Drop the starting "?"
+    }
+
+    var items = querystring.split('&');
+
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i].split('=');
+
+        if (item[0] === key) {
+            return item[1] || '';
+        }
+    }
+
+    return undefined;
+};
 
 
 /**
@@ -307,7 +362,7 @@ GJS.isFullscreen = function() {
  * @return {number} Changed value.
  */
 GJS.towardsZero = function(value, delta) {
-    return towardsValue(value, 0, delta);
+    return GJS.towardsValue(value, 0, delta);
 };
 
 /**

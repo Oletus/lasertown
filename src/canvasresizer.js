@@ -436,16 +436,18 @@ GJS.CanvasResizer.prototype._getCanvasBoundingClientRect = function() {
 /**
  * Get a canvas coordinate space position from a given event. The coordinate
  * space is relative to the width and height properties of the canvas.
- * @param {MouseEvent|PointerEvent|TouchEvent} Event to get the position from.
+ * @param {MouseEvent|PointerEvent|TouchEvent} event Event to get the position from.
  * In case of a touch event, the position is retrieved from the first touch
  * point.
  * @param {string=} touchIdentifier In case the event is a touch event, the
  * identifier of the touch point to get the position from. By default uses
  * the first entry in event.touches.
+ * @param {GJS.CanvasResizer.EventCoordinateSystem=} coordinateSystem The coordinate system for the return value. The
+ * default is CANVAS_COORDINATES.
  * @return {Object} Object with x and y keys for horizontal and vertical
  * positions in the canvas coordinate space.
  */
-GJS.CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier) {
+GJS.CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier, coordinateSystem) {
     var rect = this._getCanvasBoundingClientRect();
     var x, y;
     if (event.touches !== undefined && event.touches.length > 0) {
@@ -477,6 +479,10 @@ GJS.CanvasResizer.prototype.getCanvasPosition = function(event, touchIdentifier)
         xRel *= coordWidth / rect.width;
         yRel *= coordHeight / rect.height;
     }
+    if (coordinateSystem === GJS.CanvasResizer.EventCoordinateSystem.WEBGL_NORMALIZED_DEVICE_COORDINATES) {
+        xRel = 2.0 * xRel / coordWidth - 1.0;
+        yRel = 1.0 - 2.0 * yRel / coordHeight;
+    }
     return GJS.CanvasResizer._createVec2(xRel, yRel);
 };
 
@@ -489,29 +495,52 @@ GJS.CanvasResizer._createVec2 = function(x, y) {
 };
 
 /**
- * Create an event listener function that will normalize different events into unified API calls and make the event
- * coordinates relative to the canvas coordinate system.
- * @param {Object} callbackObject Object where canvasPress and canvasRelease functions will be called on.
+ * @enum
+ */
+GJS.CanvasResizer.EventCoordinateSystem = {
+    CANVAS_COORDINATES: 0,
+    
+    // Also known as clip space. Coordinates range from -1.0 to 1.0, with y = 1.0 being at the top of the canvas.
+    WEBGL_NORMALIZED_DEVICE_COORDINATES: 1
+};
+
+/**
+ * Create an event listener function that will normalize different pointer events (touch and mouse) into unified
+ * callbacks and make the event coordinates relative to the canvas coordinate system. Multiple pointers can be active
+ * simultaneously.
+ * @param {Object} callbackObject Object where canvasPress, canvasRelease and canvasMove functions will be called on.
+ * The callback functions are called whenever the status of a pointer changes, and receive a single object parameter
+ * with the following keys:
+ *   lastDown: an x,y vector indicating the last position where the pointer was down.
+ *   currentPosition: an x,y vector indicating the last known position of the pointer.
+ *   isDown: a boolean indicating whether the pointer is down.
+ *   index: numerical index identifying the pointer.
  * @param {boolean} listenOnCanvas Automatically add listeners on the canvas.
+ * @param {GJS.CanvasResizer.EventCoordinateSystem=} coordinateSystem The coordinate system to use for events. The
+ * default is CANVAS_COORDINATES.
  * @return {function} Function to be added as a mouse and touch listener to elements (for example the canvas element).
  */
-GJS.CanvasResizer.prototype.createPointerEventListener = function(callbackObject, listenOnCanvas) {
+GJS.CanvasResizer.prototype.createPointerEventListener = function(callbackObject, listenOnCanvas, coordinateSystem) {
     var that = this;
+    
+    if (coordinateSystem === undefined) {
+        coordinateSystem = GJS.CanvasResizer.EventCoordinateSystem.CANVAS_COORDINATES;
+    }
 
-    var coordinates = [
+    var cursors = [
     ];
     
     var alwaysTracked = [
         'mouse'
     ];
     
-    var coordinateIndices = {};
+    var cursorIndices = {};
     
     for (var i = 0; i < alwaysTracked.length; ++i) {
-        var index = coordinates.length;
-        coordinateIndices[alwaysTracked[i]] = index;
-        coordinates.push({
-            current: GJS.CanvasResizer._createVec2(-Infinity, -Infinity),
+        var index = cursors.length;
+        cursorIndices[alwaysTracked[i]] = index;
+        cursors.push({
+            currentPosition: GJS.CanvasResizer._createVec2(-Infinity, -Infinity),
             lastDown: GJS.CanvasResizer._createVec2(-Infinity, -Infinity),
             isDown: false,
             index: index
@@ -553,45 +582,45 @@ GJS.CanvasResizer.prototype.createPointerEventListener = function(callbackObject
                 if (id !== 'mouse') {
                     touchId = id.substring(5);
                 }
-                var pos = that.getCanvasPosition(e, touchId);
-                if (!coordinateIndices.hasOwnProperty(id) || coordinateIndices[id] === -1) {
+                var pos = that.getCanvasPosition(e, touchId, coordinateSystem);
+                if (!cursorIndices.hasOwnProperty(id) || cursorIndices[id] === -1) {
                     var reuseIndexKey = undefined;
-                    for (var key in coordinateIndices) {
-                        if (coordinateIndices.hasOwnProperty(key) &&
+                    for (var key in cursorIndices) {
+                        if (cursorIndices.hasOwnProperty(key) &&
                             alwaysTracked.indexOf(key) < 0 &&
-                            coordinateIndices[key] >= 0 &&
-                            !coordinates[coordinateIndices[key]].isDown) {
+                            cursorIndices[key] >= 0 &&
+                            !cursors[cursorIndices[key]].isDown) {
                             reuseIndexKey = key;
                         }
                     }
                     if (reuseIndexKey !== undefined) {
-                        coordinateIndices[id] = coordinateIndices[reuseIndexKey];
-                        coordinateIndices[reuseIndexKey] = -1;
+                        cursorIndices[id] = cursorIndices[reuseIndexKey];
+                        cursorIndices[reuseIndexKey] = -1;
                     } else {
-                        var index = coordinates.length;
-                        coordinates.push({
-                            current: pos,
+                        var index = cursors.length;
+                        cursors.push({
+                            currentPosition: pos,
                             lastDown: pos,
                             isDown: false,
                             index: index
                         });
-                        coordinateIndices[id] = index;
+                        cursorIndices[id] = index;
                     }
                 }
-                var index = coordinateIndices[id];
-                if (!coordinates[index].isDown) {
-                    coordinates[index].lastDown = pos;
-                    coordinates[index].current = pos;
-                    coordinates[index].isDown = true;
-                    coordinates[index].index = index;
-                    callbackObject.canvasPress(coordinates[index]);
+                var index = cursorIndices[id];
+                if (!cursors[index].isDown) {
+                    cursors[index].lastDown = pos;
+                    cursors[index].currentPosition = pos;
+                    cursors[index].isDown = true;
+                    cursors[index].index = index;
+                    callbackObject.canvasPress(cursors[index]);
                 }
             } else if (type === 'up') {
-                if (coordinateIndices.hasOwnProperty(id) && coordinateIndices[id] !== -1) {
-                    var index = coordinateIndices[id];
-                    if (coordinates[index].isDown) {
-                        callbackObject.canvasRelease(coordinates[index]);
-                        coordinates[index].isDown = false;
+                if (cursorIndices.hasOwnProperty(id) && cursorIndices[id] !== -1) {
+                    var index = cursorIndices[id];
+                    if (cursors[index].isDown) {
+                        callbackObject.canvasRelease(cursors[index]);
+                        cursors[index].isDown = false;
                     }
                 }
             } else if (type === 'move') {
@@ -599,10 +628,10 @@ GJS.CanvasResizer.prototype.createPointerEventListener = function(callbackObject
                 if (id !== 'mouse') {
                     touchId = id.substring(5);
                 }
-                var pos = that.getCanvasPosition(e, touchId);
-                var index = coordinateIndices[id];
-                coordinates[index].current = pos;
-                callbackObject.canvasMove(coordinates[index]);
+                var pos = that.getCanvasPosition(e, touchId, coordinateSystem);
+                var index = cursorIndices[id];
+                cursors[index].currentPosition = pos;
+                callbackObject.canvasMove(cursors[index]);
             }
         }
         e.preventDefault();

@@ -89,13 +89,13 @@ Game.prototype.ctrlsPress = function() {
 
 Game.prototype.canvasMove = function(event) {
     if (this.level) {
-        this.level.setCursorPosition(this.viewportPos(event));
+        this.level.setCursorPosition(this.positionAsVec3(event));
     }
 };
 
 Game.prototype.canvasPress = function(event) {
     if (this.level && this.downIndex === -1) {
-        this.level.setCursorPosition(this.viewportPos(event));
+        this.level.setCursorPosition(this.positionAsVec3(event));
         this.level.mouseDown();
         this.downIndex = event.index;
     }
@@ -103,17 +103,14 @@ Game.prototype.canvasPress = function(event) {
 
 Game.prototype.canvasRelease = function(event) {
     if (this.level && this.downIndex === event.index) {
-        this.level.setCursorPosition(this.viewportPos(event));
+        this.level.setCursorPosition(this.positionAsVec3(event));
         this.level.mouseUp();
         this.downIndex = -1;
     }
 };
 
-Game.prototype.viewportPos = function(event) {
-    var canvasPos = new Vec2(event.current.x, event.current.y);
-    canvasPos.x = 2 * canvasPos.x / this.resizer.canvas.width - 1;
-    canvasPos.y = 1 - 2 * canvasPos.y / this.resizer.canvas.height;
-    return new THREE.Vector3(canvasPos.x, canvasPos.y, 0);
+Game.prototype.positionAsVec3 = function(event) {
+    return new THREE.Vector3(event.currentPosition.x, event.currentPosition.y, 0);
 };
 
 Game.prototype.setCameraAspect = function(aspect) {
@@ -125,7 +122,7 @@ Game.prototype.setCameraAspect = function(aspect) {
 
 Game.prototype.render = function() {
     if (this.level) {
-        var fadeOpacity = 0.0; // Conceptually opacity of black fader over the game
+        var fadeOpacity = 0.0; // Opacity of black fader over the game (implemented by fading the canvas)
         if (this.level.state.id === Level.State.INTRO) {
             fadeOpacity = 1.0 - this.level.state.time;
         } else if (this.level.state.id === Level.State.SUCCESS && this.level.successState.id === Level.SuccessState.FADE_OUT) {
@@ -194,8 +191,8 @@ Game.parameters = new GameParameters({
     'postLD': {initial: false}  // To activate post-LD improvements
 });
 
-var DEV_MODE = (window.location.href.indexOf("?devMode") != -1);
-var POST_COMPO = (window.location.href.indexOf("?postCompo") != -1);
+var DEV_MODE = querystringUtil.get('devMode') !== undefined;
+var POST_COMPO = querystringUtil.get('postCompo') !== undefined;
 
 window['start'] = function() {
     var DEBUG_MAIN_LOOP = DEV_MODE && true; // Set to true to allow fast-forwarding main loop with 'f'
@@ -243,7 +240,8 @@ window['start'] = function() {
     
     var loadingBar = new GJS.LoadingBar();
     game = new Game(resizer, renderer, loadingBar);
-    var eventListener = resizer.createPointerEventListener(game, false);
+    var eventListener = resizer.createPointerEventListener(game, false, 
+        GJS.CanvasResizer.EventCoordinateSystem.WEBGL_NORMALIZED_DEVICE_COORDINATES);
     resizer.canvas.addEventListener('mousemove', eventListener);
     resizer.canvas.addEventListener('mousedown', eventListener);
     resizer.canvas.addEventListener('mouseup', eventListener);
