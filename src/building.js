@@ -749,12 +749,14 @@ GoalPostBlock.prototype.getModel = function() {
     var material = BuildingBlock.goalMaterial;
     var mesh1 = new THREE.Mesh(geometry, material);
     var mesh2 = new THREE.Mesh(geometry, material);
-    var parent = new THREE.Object3D();
-    parent.add(mesh1);
-    parent.add(mesh2);
     mesh1.position.x = -0.45;
+    mesh1.updateMatrix();
     mesh2.position.x = 0.45;
-    return parent;
+    mesh2.updateMatrix();
+    var combinedGeometry = new THREE.Geometry();
+    combinedGeometry.merge(mesh1.geometry, mesh1.matrix);
+    combinedGeometry.merge(mesh2.geometry, mesh2.matrix);
+    return new THREE.Mesh(combinedGeometry, material);
 };
 
 

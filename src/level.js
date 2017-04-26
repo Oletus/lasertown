@@ -448,27 +448,23 @@ Level.prototype.setupLights = function() {
     mainLight.position.set(0.5, 1, -1).normalize();
     this.scene.add(mainLight);
     
-    var spotLight = new THREE.SpotLight(0x665555);
+    var spotLight = new THREE.SpotLight(0x665555, 1, 0, Math.PI * 0.15);
     this.spotLight = spotLight;
     spotLight.position.set( 125, 250, -250 );
     spotLight.target = new THREE.Object3D();
     this.scene.add(spotLight.target);
     this.updateSpotLightTarget();
-
-    spotLight.castShadow = true;
     
-    /*var helper = new THREE.CameraHelper( spotLight.shadow.camera );
-    this.scene.add(helper);*/
-
+    spotLight.castShadow = true;
+    var shadowFovDegrees = 4;
+    spotLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( shadowFovDegrees, 1, 5, 500 ) );
     spotLight.shadow.mapSize.width = 1024;
     spotLight.shadow.mapSize.height = 1024;
-
-    spotLight.shadow.camera.near = 5;
-    spotLight.shadow.camera.far = 500;
-    spotLight.shadow.camera.fov = 4;
     spotLight.shadow.opacity = 0.5;
 
     this.scene.add( spotLight );
+    /*var helper = new THREE.CameraHelper( spotLight.shadow.camera );
+    this.scene.add(helper);*/
     
     var fillLight = new THREE.DirectionalLight(0x333355, 1);
     fillLight.position.set(-1, 1, 1).normalize();
